@@ -34,6 +34,12 @@ query = async (query, params) => {
   }
 };
 
+check = async () => {
+  const result = await query("SELECT version();", []);
+  return result;
+};
+
 module.exports = {
   query,
+  check,
 };
