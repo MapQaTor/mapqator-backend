@@ -1,8 +1,31 @@
 const base = require("./base");
 
 const createPlace = async (place) => {
-  const query =
-    "INSERT INTO places (place_id, name, formatted_address, geometry, opening_hours, rating, reviews, price_level, types, user_ratings_total, delivery, dine_in, reservable, serves_beer, serves_breakfast, serves_brunch, serves_dinner, serves_lunch, serves_vegetarian_food, serves_wine, takeout, wheelchair_accessible_entrance) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) RETURNING *";
+  const query = `INSERT INTO places (place_id, name, formatted_address, geometry, opening_hours, rating, reviews, price_level, types, user_ratings_total, delivery, dine_in, reservable, serves_beer, serves_breakfast, serves_brunch, serves_dinner, serves_lunch, serves_vegetarian_food, serves_wine, takeout, wheelchair_accessible_entrance) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22) 
+    ON CONFLICT (place_id) DO UPDATE SET 
+    name = EXCLUDED.name, 
+    formatted_address = EXCLUDED.formatted_address, 
+    geometry = EXCLUDED.geometry, 
+    opening_hours = EXCLUDED.opening_hours, 
+    rating = EXCLUDED.rating, 
+    reviews = EXCLUDED.reviews, 
+    price_level = EXCLUDED.price_level, 
+    types = EXCLUDED.types, 
+    user_ratings_total = EXCLUDED.user_ratings_total, 
+    delivery = EXCLUDED.delivery, 
+    dine_in = EXCLUDED.dine_in, 
+    reservable = EXCLUDED.reservable, 
+    serves_beer = EXCLUDED.serves_beer, 
+    serves_breakfast = EXCLUDED.serves_breakfast, 
+    serves_brunch = EXCLUDED.serves_brunch, 
+    serves_dinner = EXCLUDED.serves_dinner, 
+    serves_lunch = EXCLUDED.serves_lunch, 
+    serves_vegetarian_food = EXCLUDED.serves_vegetarian_food, 
+    serves_wine = EXCLUDED.serves_wine, 
+    takeout = EXCLUDED.takeout, 
+    wheelchair_accessible_entrance = EXCLUDED.wheelchair_accessible_entrance
+    RETURNING *`;
   const params = [
     place.place_id || null,
     place.name || null,
@@ -30,6 +53,7 @@ const createPlace = async (place) => {
   const result = await base.query(query, params);
   return result;
 };
+
 const getPlace = async (id) => {
   const query = "SELECT * FROM places WHERE id = $1";
   const params = [id];
