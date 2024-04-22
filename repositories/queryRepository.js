@@ -7,7 +7,7 @@ const createQuery = async (record) => {
     record.question,
     record.answer,
     record.context,
-    record.context_json,
+    record.contextJSON,
     record.class,
   ];
   const result = await base.query(query, params);
