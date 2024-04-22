@@ -2,8 +2,14 @@ const base = require("./base");
 
 const createQuery = async (record) => {
   const query =
-    "INSERT INTO dataset (question, answer, context) VALUES ($1, $2, $3) RETURNING *";
-  const params = [record.question, record.answer, record.context];
+    "INSERT INTO dataset (question, answer, context, context_json, classification) VALUES ($1, $2, $3, $4, $5) RETURNING *";
+  const params = [
+    record.question,
+    record.answer,
+    record.context,
+    record.context_json,
+    record.class,
+  ];
   const result = await base.query(query, params);
   return result;
 };
