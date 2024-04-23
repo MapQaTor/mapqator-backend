@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const placeRoutes = require("./placeRoutes");
 const queryRoutes = require("./queryRoutes");
+const gptRoutes = require("./gptRoutes");
 const base = require("../repositories/base");
 
 router.get("/", async (req, res) => {
@@ -14,5 +15,6 @@ router.get("/", async (req, res) => {
 
 router.use("/places", placeRoutes);
 router.use("/queries", queryRoutes);
+router.use("/gpt", gptRoutes);
 
 module.exports = router;
