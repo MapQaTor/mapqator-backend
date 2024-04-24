@@ -58,7 +58,7 @@ const deleteQuery = async (req, res) => {
 };
 
 const getGPTContext = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const message_text = [
     {
       role: "system",
@@ -81,6 +81,54 @@ const getGPTContext = async (req, res) => {
     },
     {
       role: "user",
+      content: `Information of Bangladesh University of Engineering and Technology (BUET): Location: Polashi, Dhaka, Bangladesh(23.7265659, 90.3926596). 
+      Nearby places of Bangladesh University of Engineering and Technology (BUET) of type "cafe" with keyword "metro" are (ranked by distance):
+      1. Coffee Buzz | Lazz center, 63, Lake Circus, West পান্থপথ, ঢাকা 1205, Bangladesh
+      2. Pinewood Cafe n' Restaurant | House no: 19, Rd No 12, Dhaka 1209, Bangladesh
+      3. Gloria Jean's Coffees, Dhanmondi | 67, 1st Floor, Navana GH Heights, সাতমসজিদ সড়ক, ঢাকা 1205, Bangladesh
+      4. Cafe Air - Bell Pepper | Bangladesh Air Meusum, Dhaka 1207, Bangladesh
+      5. Cloud Coffee - Agargaon | 205/1/A, Begum Rokeya Sharani, Agargaon, Taltola Agargaon, ঢাকা 1207, Bangladesh
+      6. Roseate Cafe | 1st floor, House 61 Rd No-15, Dhaka 1213, Bangladesh
+      7. Pinewood Cafe + Kitchen | House 48 Road No 13C, Dhaka 1213, Bangladesh
+      8. Tagore Terrace | House 44 Rd 12, Dhaka 1212, Bangladesh
+      9. Cooper's Coffee Shop | 25, Metropolitan Shopping Plaza, ঢাকা 1212, Bangladesh
+      10. Sub-Street Twist (সাব স্ট্রীট টুইস্ট) | Mirpur Rd, Dhaka 1206, Bangladesh
+      11. Metro Baker's and Cafe | R937+Q4F, Dhaka 1216, Bangladesh
+      12. Lal Math (লাল মাঠ) Tee Zone | R9G8+88J, Rd No. 4, Dhaka 1216, Bangladesh
+      13. IZ pâtisserie and café | B.A, House #45 Rd No. 7, Dhaka 1216, Bangladesh
+      14. AD Mart 5 Point Garden Cafe | R9M7+MCP, Dhaka, Bangladesh
+      15. Fusion (AD Canteen) | R9R5+692, Dhaka, Bangladesh
+      16. Neuve'mi Cafe & Restro | Diabari Dhaka Division,Bangladesh D, Plot #1/A, সড়ক-২, ঢাকা 1230, Bangladesh
+      Nearby places of Bangladesh University of Engineering and Technology (BUET) of type "cafe"  are (in 1000 m radius):
+      1. BUET Staff Canteen | P9GV+56Q, Dhaka, Bangladesh
+      2. মুক্তি কর্নার | P9GR+MC8, Dhaka, Bangladesh
+      3. Mannan Vai's Canteen | BUET White Campus, BUET Central Road, Dhaka, Bangladesh
+      4. রাসেল ভাইয়ের দোকান | Ahsanullah Hall, Shahid Smirti Hall Connecting Road, Dhaka, Bangladesh
+      5. Nasir Tea Stall | P9HR+32R, Zahir Raihan Rd, Dhaka 1205, Bangladesh
+      6. Tea Stall (With Chicken Flavour) | BUET Market, 154 Zahir Raihan Rd, Dhaka, Bangladesh
+      7. Jahir's Cantine | P9FV+GVJ, Bakshi Bazar Road, Dhaka, Bangladesh
+      8. The Nineteenth Coffee | P9FW+Q7P, Bakshi Bazar Road, Dhaka, Bangladesh
+      9. Kalapata Kichen | P9FW+Q68, Bakshi Bazar Road, Dhaka, Bangladesh
+      10. সালাম ষ্টোর | Polashi Mor, Dhaka 1205, Bangladesh
+      11. Takeaway Polashi | 22, 6/4 Dhakeshwari Rd, Polashi 1211, Bangladesh
+      12. Mon Chai Ca | Victoriya Park , Shop no-02, City Corporation Market, ঢাকা 1100, Bangladesh
+      13. Awake Coffee Roasters at British Council | 5 Fuller Road, Dhaka 1000, Bangladesh
+      14. আর এস স্ন্যাকস্ কর্ণার | ঢাকা মেডিকেল হাসপাতাল,গেইট-২, ঢাকা, Bangladesh
+      15. Ohi's Tong | P9CV+QW3, Dhaka, Bangladesh
+      16. Mashallah Tea Store | 33 Khaja Dewan 1st Ln, Dhaka 1211, Bangladesh
+      17. মালেক টি টি স্টোর | 33 Khaja Dewan 1st Ln, Dhaka 1211, Bangladesh
+      18. Juan cafe | 49/a, azimpur estate, 1205, ঢাকা 1205, Bangladesh
+      19. Mustafa mia Store | P9JQ+63J, Dhaka 1205, Bangladesh
+      20. ফারুক মামার দোকান | TSC Tea Stall, Dhaka, Bangladesh`,
+    },
+    {
+      role: "assistant",
+      content: `Bangladesh University of Engineering and Technology (BUET) is located in Polashi, Dhaka, Bangladesh. Nearby cafes with the keyword "metro" include Coffee Buzz, Pinewood Cafe n' Restaurant, Gloria Jean's Coffees, Cafe Air - Bell Pepper, Cloud Coffee - Agargaon, Roseate Cafe, Pinewood Cafe + Kitchen, Tagore Terrace, Cooper's Coffee Shop, Sub-Street Twist, Metro Baker's and Cafe, Lal Math Tee Zone, IZ pâtisserie and café, AD Mart 5 Point Garden Cafe, Fusion (AD Canteen), and Neuve'mi Cafe & Restro.
+
+      Within a 1000-meter radius of BUET, there are also several cafes such as BUET Staff Canteen, মুক্তি কর্নার, Mannan Vai's Canteen, রাসেল ভাইয়ের দোকান, Nasir Tea Stall, Tea Stall (With Chicken Flavour), Jahir's Cantine, The Nineteenth Coffee, Kalapata Kichen, সালাম ষ্টোর, Takeaway Polashi, Mon Chai Ca, Awake Coffee Roasters at British Council, আর এস স্ন্যাকস্ কর্ণার, Ohi's Tong, Mashallah Tea Store, মালেক টি টি স্টোর, Juan cafe, Mustafa mia Store, and ফারুক মামার দোকান.`,
+    },
+    {
+      role: "user",
       content: req.body.content,
     },
   ];
@@ -95,7 +143,7 @@ const getGPTContext = async (req, res) => {
         top_p: 1,
         frequency_penalty: 0,
         presence_penalty: 0,
-        stop: ["\n"],
+        // stop: ["\n"],
       }
     );
     console.log(choices[0].message["content"]);
