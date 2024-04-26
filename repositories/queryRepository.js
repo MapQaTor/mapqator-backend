@@ -23,15 +23,23 @@ const getQuery = async (id) => {
 };
 
 const getQueries = async () => {
-  const query = "SELECT * FROM dataset";
+  const query = "SELECT * FROM dataset ORDER BY id ASC";
   const result = await base.query(query);
   return result;
 };
 
 const updateQuery = async (id, record) => {
   const query =
-    "UPDATE dataset SET question = $1, answer = $2, context = $3 WHERE id = $4 RETURNING *";
-  const params = [record.question, record.answer, record.context, id];
+    "UPDATE dataset SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6 WHERE id = $7 RETURNING *";
+  const params = [
+    record.question,
+    record.answer,
+    record.context,
+    record.contextJSON,
+    record.class,
+    record.contextGPT,
+    id,
+  ];
   const result = await base.query(query, params);
   return result;
 };
