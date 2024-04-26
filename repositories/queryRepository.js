@@ -7,9 +7,9 @@ const createQuery = async (record) => {
     record.question,
     record.answer,
     record.context,
-    record.contextJSON,
-    record.class,
-    record.contextGPT,
+    record.context_json,
+    record.classification,
+    record.context_gpt,
   ];
   const result = await base.query(query, params);
   return result;
@@ -35,9 +35,9 @@ const updateQuery = async (id, record) => {
     record.question,
     record.answer,
     record.context,
-    record.contextJSON,
-    record.class,
-    record.contextGPT,
+    record.context_json,
+    record.classification,
+    record.context_gpt,
     id,
   ];
   const result = await base.query(query, params);

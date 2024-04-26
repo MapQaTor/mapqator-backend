@@ -14,7 +14,7 @@ const appRoutes = require("./routes/appRoutes");
 // app.use(cors(corsOptions));
 
 cron.schedule("*/14 * * * *", () => {
-  let host = "https://mapquest.onrender.com/api";
+  let host = "https://mapquest-app.onrender.com/api";
   https
     .get(host, (resp) => {
       if (resp.statusCode == 200) console.log(host + " is alive");
