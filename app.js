@@ -37,8 +37,4 @@ app.get("/invalid", (req, res) => {
   res.status(401).send({ error: "access denied" });
 });
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(CLIENT_BUILD_PATH, "index.html"));
-});
-
 module.exports = { app };
