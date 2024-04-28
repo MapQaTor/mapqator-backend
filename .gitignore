@@ -21,3 +21,4 @@ yarn.lock
 
 # Testing
 coverage/
+.vercel

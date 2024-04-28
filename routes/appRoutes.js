@@ -2,19 +2,21 @@ const router = require("express").Router();
 const placeRoutes = require("./placeRoutes");
 const queryRoutes = require("./queryRoutes");
 const gptRoutes = require("./gptRoutes");
+const mapRoutes = require("./mapRoutes");
 const base = require("../repositories/base");
 
 router.get("/", async (req, res) => {
-  const result = await base.check();
-  if (result.success) {
-    res.status(200).send("Hi, welcome to Map Quest");
-  } else {
-    res.status(404).send("Cannot connect to Database");
-  }
+	const result = await base.check();
+	if (result.success) {
+		res.status(200).send("Hi, welcome to Map Quest");
+	} else {
+		res.status(404).send("Cannot connect to Database");
+	}
 });
 
 router.use("/places", placeRoutes);
 router.use("/queries", queryRoutes);
 router.use("/gpt", gptRoutes);
+router.use("/map", mapRoutes);
 
 module.exports = router;
