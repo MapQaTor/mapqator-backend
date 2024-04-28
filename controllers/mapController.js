@@ -10,7 +10,7 @@ const getDistance = async (req, res) => {
 					origins: "place_id:" + req.query.origin,
 					destinations: "place_id:" + req.query.destination,
 					mode: req.query.mode,
-					key: "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					key: process.env.GOOGLE_MAPS_API_KEY,
 				},
 			}
 		);
@@ -43,7 +43,7 @@ const searchNearbyNew = async (req, res) => {
 			{
 				headers: {
 					"Content-Type": "application/json",
-					"X-Goog-Api-Key": "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					"X-Goog-Api-Key": process.env.GOOGLE_MAPS_API_KEY,
 					"X-Goog-FieldMask":
 						"places.id,places.displayName,places.formattedAddress",
 				},
@@ -72,7 +72,7 @@ const searchNearby = async (req, res) => {
 					type: req.query.type,
 					keyword: req.query.keyword,
 					rankby: req.query.rankby,
-					key: "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					key: process.env.GOOGLE_MAPS_API_KEY,
 				},
 			}
 		);
@@ -94,7 +94,7 @@ const getDetailsNew = async (req, res) => {
 			{
 				headers: {
 					"Content-Type": "application/json",
-					"X-Goog-Api-Key": "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					"X-Goog-Api-Key": process.env.GOOGLE_MAPS_API_KEY,
 					"X-Goog-FieldMask":
 						"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,reviews,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout",
 				},
@@ -115,7 +115,7 @@ const getDetails = async (req, res) => {
 			{
 				params: {
 					place_id: req.params.id,
-					key: "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					key: process.env.GOOGLE_MAPS_API_KEY,
 				},
 			}
 		);
@@ -139,7 +139,7 @@ const searchTextNew = async (req, res) => {
 			{
 				headers: {
 					"Content-Type": "application/json",
-					"X-Goog-Api-Key": "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					"X-Goog-Api-Key": process.env.GOOGLE_MAPS_API_KEY,
 					// "X-Goog-FieldMask":
 					// 	"places.id,places.name,places.accessibilityOptions,places.addressComponents,places.adrFormatAddress,places.businessStatus,places.displayName,places.formattedAddress,places.googleMapsUri,places.iconBackgroundColor,places.iconMaskBaseUri,places.location,places.photos,places.plusCode,places.primaryType,places.primaryTypeDisplayName,places.shortFormattedAddress,places.subDestinations,places.types,places.utcOffsetMinutes,places.viewport,places.currentOpeningHours,places.currentSecondaryOpeningHours,places.internationalPhoneNumber,places.nationalPhoneNumber,places.priceLevel,places.rating,places.regularOpeningHours,places.regularSecondaryOpeningHours,places.userRatingCount,places.websiteUri,places.allowsDogs,places.curbsidePickup,places.delivery,places.dineIn,places.editorialSummary,places.evChargeOptions,places.fuelOptions,places.goodForChildren,places.goodForGroups,places.goodForWatchingSports,places.liveMusic,places.menuForChildren,places.parkingOptions,places.paymentOptions,places.outdoorSeating,places.reservable,places.restroom,places.reviews,places.servesBeer,places.servesBreakfast,places.servesBrunch,places.servesCocktails,places.servesCoffee,places.servesDessert,places.servesDinner,places.servesLunch,places.servesVegetarianFood,places.servesWine,places.takeout",
 					"X-Goog-FieldMask":
@@ -162,7 +162,7 @@ const searchText = async (req, res) => {
 			{
 				params: {
 					query: req.query.query,
-					key: "AIzaSyCNtIajO-Xwpocu9ARrah2khQF-tG8vWok",
+					key: process.env.GOOGLE_MAPS_API_KEY,
 				},
 			}
 		);
