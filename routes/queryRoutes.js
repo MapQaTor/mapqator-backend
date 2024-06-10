@@ -2,6 +2,8 @@ const queryController = require("../controllers/queryController");
 
 const router = require("express").Router();
 
+router.get("/dataset", queryController.getDataset);
+
 router.post("/gpt/context", queryController.getGPTContext);
 router.post("/", queryController.createQuery);
 router.get("/:id", queryController.getQuery);

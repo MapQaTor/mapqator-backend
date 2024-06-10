@@ -3,85 +3,86 @@ const queryRepository = require("../repositories/queryRepository");
 const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
 const client = new OpenAIClient(
-  "https://qcri-llm-rag-5.openai.azure.com/",
-  new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
+	"https://qcri-llm-rag-5.openai.azure.com/",
+	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
 );
 
 const createQuery = async (req, res) => {
-  const query = req.body;
-  const result = await queryRepository.createQuery(query);
-  if (result.success) {
-    res.status(201).send(result.data);
-  } else {
-    res.status(400).send(result);
-  }
+	const query = req.body;
+	const result = await queryRepository.createQuery(query);
+	if (result.success) {
+		res.status(201).send(result.data);
+	} else {
+		res.status(400).send(result);
+	}
 };
 
 const getQuery = async (req, res) => {
-  const id = parseInt(req.params.id);
-  const result = await queryRepository.getQuery(id);
-  if (result.success) {
-    res.send(result.data);
-  } else {
-    res.status(404).send(result);
-  }
+	const id = parseInt(req.params.id);
+	const result = await queryRepository.getQuery(id);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
 };
 
 const getQueries = async (req, res) => {
-  const result = await queryRepository.getQueries();
-  if (result.success) {
-    res.send(result.data);
-  } else {
-    res.status(404).send(result);
-  }
+	const result = await queryRepository.getQueries();
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
 };
 
 const updateQuery = async (req, res) => {
-  const id = parseInt(req.params.id);
-  const query = req.body;
-  const result = await queryRepository.updateQuery(id, query);
-  if (result.success) {
-    res.send(result.data);
-  } else {
-    res.status(400).send(result);
-  }
+	const id = parseInt(req.params.id);
+	const query = req.body;
+	const result = await queryRepository.updateQuery(id, query);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(400).send(result);
+	}
 };
 
 const deleteQuery = async (req, res) => {
-  const id = parseInt(req.params.id);
-  const result = await queryRepository.deleteQuery(id);
-  if (result.success) {
-    res.send(result.data);
-  } else {
-    res.status(400).send(result);
-  }
+	const id = parseInt(req.params.id);
+	const result = await queryRepository.deleteQuery(id);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(400).send(result);
+	}
 };
 
 const getGPTContext = async (req, res) => {
-  // console.log(req.body);
-  const message_text = [
-    {
-      role: "system",
-      content: "You are an AI assistant that helps people find information.",
-    },
-    {
-      role: "user",
-      content:
-        "I will give you some structured information, you need to convert them to more humanly language.",
-    },
-    {
-      role: "user",
-      content:
-        "Information of Sultan's Dine: Location: Green Akshay Plaza, 1st Floor, 146/G (Old), 59, New সাতমসজিদ সড়ক, ঢাকা 1209, Bangladesh(23.7388632, 90.3753979). Information of My home: Location: Indira Rd, Dhaka 1215, Bangladesh(23.7580016, 90.38486789999999). Information of LABAID Specialized Hospital: Location: House - -1 and , 6, Road No. 4, Dhaka 1205, Bangladesh(23.7421428, 90.382994). Open: Monday: Open 24 hours, Tuesday: Open 24 hours, Wednesday: Open 24 hours, Thursday: Open 24 hours, Friday: Open 24 hours, Saturday: Open 24 hours, Sunday: Open 24 hours. Transit Distance from My home to Sultan's Dine is 2.6 km(37 mins). Driving Distance from My home to LABAID Specialized Hospital is 2.0 km(28 mins). Walking Distance from Sultan's Dine to LABAID Specialized Hospital is 1.6 km(22 mins). Transit Distance from LABAID Specialized Hospital to Sultan's Dine is 1.1 km(16 mins)",
-    },
-    {
-      role: "assistant",
-      content:
-        "Sultan's Dine is located on the first floor of Green Akshay Plaza, at 146/G (Old), 59, New Satmasjid Road, Dhaka 1209, Bangladesh. My home is on Indira Road in Dhaka, Bangladesh, with the postal code 1215. LABAID Specialized Hospital is situated at House -1 and 6, Road No. 4, Dhaka 1205, Bangladesh. Sultan's Dine operates 24 hours every day of the week. The transit distance from my home to Sultan's Dine is approximately 2.6 kilometers, which would take about 37 minutes by public transport. Driving from my home to LABAID Specialized Hospital covers about 2.0 kilometers and takes around 28 minutes. Walking from Sultan's Dine to LABAID Specialized Hospital is about 1.6 kilometers and takes around 22 minutes. Conversely, traveling from LABAID Specialized Hospital to Sultan's Dine has a transit distance of about 1.1 kilometers and takes around 16 minutes by public transport.",
-    },
-    {
-      role: "user",
-      content: `Information of Bangladesh University of Engineering and Technology (BUET): Location: Polashi, Dhaka, Bangladesh(23.7265659, 90.3926596). 
+	// console.log(req.body);
+	const message_text = [
+		{
+			role: "system",
+			content:
+				"You are an AI assistant that helps people find information.",
+		},
+		{
+			role: "user",
+			content:
+				"I will give you some structured information, you need to convert them to more humanly language.",
+		},
+		{
+			role: "user",
+			content:
+				"Information of Sultan's Dine: Location: Green Akshay Plaza, 1st Floor, 146/G (Old), 59, New সাতমসজিদ সড়ক, ঢাকা 1209, Bangladesh(23.7388632, 90.3753979). Information of My home: Location: Indira Rd, Dhaka 1215, Bangladesh(23.7580016, 90.38486789999999). Information of LABAID Specialized Hospital: Location: House - -1 and , 6, Road No. 4, Dhaka 1205, Bangladesh(23.7421428, 90.382994). Open: Monday: Open 24 hours, Tuesday: Open 24 hours, Wednesday: Open 24 hours, Thursday: Open 24 hours, Friday: Open 24 hours, Saturday: Open 24 hours, Sunday: Open 24 hours. Transit Distance from My home to Sultan's Dine is 2.6 km(37 mins). Driving Distance from My home to LABAID Specialized Hospital is 2.0 km(28 mins). Walking Distance from Sultan's Dine to LABAID Specialized Hospital is 1.6 km(22 mins). Transit Distance from LABAID Specialized Hospital to Sultan's Dine is 1.1 km(16 mins)",
+		},
+		{
+			role: "assistant",
+			content:
+				"Sultan's Dine is located on the first floor of Green Akshay Plaza, at 146/G (Old), 59, New Satmasjid Road, Dhaka 1209, Bangladesh. My home is on Indira Road in Dhaka, Bangladesh, with the postal code 1215. LABAID Specialized Hospital is situated at House -1 and 6, Road No. 4, Dhaka 1205, Bangladesh. Sultan's Dine operates 24 hours every day of the week. The transit distance from my home to Sultan's Dine is approximately 2.6 kilometers, which would take about 37 minutes by public transport. Driving from my home to LABAID Specialized Hospital covers about 2.0 kilometers and takes around 28 minutes. Walking from Sultan's Dine to LABAID Specialized Hospital is about 1.6 kilometers and takes around 22 minutes. Conversely, traveling from LABAID Specialized Hospital to Sultan's Dine has a transit distance of about 1.1 kilometers and takes around 16 minutes by public transport.",
+		},
+		{
+			role: "user",
+			content: `Information of Bangladesh University of Engineering and Technology (BUET): Location: Polashi, Dhaka, Bangladesh(23.7265659, 90.3926596). 
       Nearby places of Bangladesh University of Engineering and Technology (BUET) of type "cafe" with keyword "metro" are (ranked by distance):
       1. Coffee Buzz | Lazz center, 63, Lake Circus, West পান্থপথ, ঢাকা 1205, Bangladesh
       2. Pinewood Cafe n' Restaurant | House no: 19, Rd No 12, Dhaka 1209, Bangladesh
@@ -120,45 +121,55 @@ const getGPTContext = async (req, res) => {
       18. Juan cafe | 49/a, azimpur estate, 1205, ঢাকা 1205, Bangladesh
       19. Mustafa mia Store | P9JQ+63J, Dhaka 1205, Bangladesh
       20. ফারুক মামার দোকান | TSC Tea Stall, Dhaka, Bangladesh`,
-    },
-    {
-      role: "assistant",
-      content: `Bangladesh University of Engineering and Technology (BUET) is located in Polashi, Dhaka, Bangladesh. Nearby cafes with the keyword "metro" include Coffee Buzz, Pinewood Cafe n' Restaurant, Gloria Jean's Coffees, Cafe Air - Bell Pepper, Cloud Coffee - Agargaon, Roseate Cafe, Pinewood Cafe + Kitchen, Tagore Terrace, Cooper's Coffee Shop, Sub-Street Twist, Metro Baker's and Cafe, Lal Math Tee Zone, IZ pâtisserie and café, AD Mart 5 Point Garden Cafe, Fusion (AD Canteen), and Neuve'mi Cafe & Restro.
+		},
+		{
+			role: "assistant",
+			content: `Bangladesh University of Engineering and Technology (BUET) is located in Polashi, Dhaka, Bangladesh. Nearby cafes with the keyword "metro" include Coffee Buzz, Pinewood Cafe n' Restaurant, Gloria Jean's Coffees, Cafe Air - Bell Pepper, Cloud Coffee - Agargaon, Roseate Cafe, Pinewood Cafe + Kitchen, Tagore Terrace, Cooper's Coffee Shop, Sub-Street Twist, Metro Baker's and Cafe, Lal Math Tee Zone, IZ pâtisserie and café, AD Mart 5 Point Garden Cafe, Fusion (AD Canteen), and Neuve'mi Cafe & Restro.
 
       Within a 1000-meter radius of BUET, there are also several cafes such as BUET Staff Canteen, মুক্তি কর্নার, Mannan Vai's Canteen, রাসেল ভাইয়ের দোকান, Nasir Tea Stall, Tea Stall (With Chicken Flavour), Jahir's Cantine, The Nineteenth Coffee, Kalapata Kichen, সালাম ষ্টোর, Takeaway Polashi, Mon Chai Ca, Awake Coffee Roasters at British Council, আর এস স্ন্যাকস্ কর্ণার, Ohi's Tong, Mashallah Tea Store, মালেক টি টি স্টোর, Juan cafe, Mustafa mia Store, and ফারুক মামার দোকান.`,
-    },
-    {
-      role: "user",
-      content: req.body.content,
-    },
-  ];
+		},
+		{
+			role: "user",
+			content: req.body.content,
+		},
+	];
 
-  try {
-    const { choices } = await client.getChatCompletions(
-      "GPT-35-TURBO-0125",
-      message_text,
-      {
-        max_tokens: 800,
-        temperature: 0,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        // stop: ["\n"],
-      }
-    );
-    console.log(choices[0].message["content"]);
-    res.send(choices[0].message["content"]);
-  } catch (error) {
-    console.error("An error occurred:", error);
-    res.status(500).send({ success: false, error: "An error occurred" });
-  }
+	try {
+		const { choices } = await client.getChatCompletions(
+			"GPT-35-TURBO-0125",
+			message_text,
+			{
+				max_tokens: 800,
+				temperature: 0,
+				top_p: 1,
+				frequency_penalty: 0,
+				presence_penalty: 0,
+				// stop: ["\n"],
+			}
+		);
+		console.log(choices[0].message["content"]);
+		res.send(choices[0].message["content"]);
+	} catch (error) {
+		console.error("An error occurred:", error);
+		res.status(500).send({ success: false, error: "An error occurred" });
+	}
+};
+
+const getDataset = async (req, res) => {
+	const result = await queryRepository.getDataset();
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
 };
 
 module.exports = {
-  createQuery,
-  getQuery,
-  getQueries,
-  updateQuery,
-  deleteQuery,
-  getGPTContext,
+	createQuery,
+	getQuery,
+	getQueries,
+	updateQuery,
+	deleteQuery,
+	getGPTContext,
+	getDataset,
 };
