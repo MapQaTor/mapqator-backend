@@ -16,7 +16,11 @@ const insertResult = async (result) => {
 };
 
 const getAllResults = async () => {
-	const query = "SELECT * FROM evaluations";
+	const query = `
+		SELECT *
+		FROM evaluations
+		JOIN models ON evaluations.model_id = models.id
+	`;
 	const result = await base.query(query);
 	return result;
 };

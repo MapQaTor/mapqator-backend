@@ -16,14 +16,27 @@ const createQuery = async (record) => {
 };
 
 const getQuery = async (id) => {
-	const query = "SELECT * FROM dataset WHERE id = $1";
+	const query = `
+		SELECT *
+		FROM dataset
+		WHERE id = $1
+	`;
 	const params = [id];
 	const result = await base.query(query, params);
 	return result;
 };
 
 const getQueries = async () => {
-	const query = "SELECT * FROM dataset ORDER BY id DESC";
+	const query = `
+		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
+		FROM dataset DS
+		JOIN evaluations E
+		ON DS.id = E.query_id
+		JOIN models M
+		ON E.model_id = M.id
+		GROUP BY DS.id
+		ORDER BY id DESC
+	`;
 	const result = await base.query(query);
 	return result;
 };
