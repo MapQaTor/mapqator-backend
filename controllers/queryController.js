@@ -41,7 +41,7 @@ const updateQuery = async (req, res) => {
 	const query = req.body;
 	const result = await queryRepository.updateQuery(id, query);
 	if (result.success) {
-		res.send(result.data);
+		res.send((await queryRepository.getQuery(id)).data);
 	} else {
 		res.status(400).send(result);
 	}
