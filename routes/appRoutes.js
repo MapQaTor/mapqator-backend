@@ -18,5 +18,6 @@ router.use("/places", placeRoutes);
 router.use("/queries", queryRoutes);
 router.use("/gpt", gptRoutes);
 router.use("/map", mapRoutes);
+router.use("/evaluation", require("./evaluationRoutes"));
 
 module.exports = router;
