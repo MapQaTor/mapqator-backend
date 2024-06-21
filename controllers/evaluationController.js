@@ -2,7 +2,7 @@ const evaluationRepository = require("../repositories/evaluationRepository");
 
 const insertResult = async (req, res) => {
 	try {
-		const list = req.body;
+		const list = req.body.list;
 		const result = await evaluationRepository.insertResult(list);
 
 		if (result.success) {
@@ -13,6 +13,7 @@ const insertResult = async (req, res) => {
 			res.status(400).json({ error: "Can't insert result" });
 		}
 	} catch (error) {
+		console.log(error.message);
 		res.status(500).json({ error: error.message });
 	}
 };
