@@ -2,7 +2,9 @@ const evaluationRepository = require("../repositories/evaluationRepository");
 
 const insertResult = async (req, res) => {
 	try {
-		const list = req.body.list;
+		let list = req.body.list;
+		console.log(list);
+		list = JSON.parse(list);
 		const result = await evaluationRepository.insertResult(list);
 
 		if (result.success) {
