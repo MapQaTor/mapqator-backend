@@ -63,22 +63,22 @@ const getGPTContext = async (req, res) => {
 		{
 			role: "system",
 			content:
-				"You are an AI assistant that helps people find information.",
+				"You are an AI assistant that helps people that converts structured information to more natural information.",
 		},
 		{
 			role: "user",
 			content:
-				"I will give you some structured information, you need to convert them to more humanly language.",
+				"I will give you some structured information, you need to convert them to more humanly language. This is a context for a question. So, I want the context to be more humanly.",
 		},
 		{
 			role: "user",
 			content:
-				"Information of Sultan's Dine: Location: Green Akshay Plaza, 1st Floor, 146/G (Old), 59, New সাতমসজিদ সড়ক, ঢাকা 1209, Bangladesh(23.7388632, 90.3753979). Information of My home: Location: Indira Rd, Dhaka 1215, Bangladesh(23.7580016, 90.38486789999999). Information of LABAID Specialized Hospital: Location: House - -1 and , 6, Road No. 4, Dhaka 1205, Bangladesh(23.7421428, 90.382994). Open: Monday: Open 24 hours, Tuesday: Open 24 hours, Wednesday: Open 24 hours, Thursday: Open 24 hours, Friday: Open 24 hours, Saturday: Open 24 hours, Sunday: Open 24 hours. Transit Distance from My home to Sultan's Dine is 2.6 km(37 mins). Driving Distance from My home to LABAID Specialized Hospital is 2.0 km(28 mins). Walking Distance from Sultan's Dine to LABAID Specialized Hospital is 1.6 km(22 mins). Transit Distance from LABAID Specialized Hospital to Sultan's Dine is 1.1 km(16 mins)",
+				"Information of Sultan's Dine: Location: Green Akshay Plaza, 1st Floor, 146/G (Old), 59, New সাতমসজিদ সড়ক, ঢাকা 1209, Bangladesh(23.7388632, 90.3753979). Information of My home: Location: Indira Rd, Dhaka 1215, Bangladesh(23.7580016, 90.38486789999999). Information of LABAID Specialized Hospital: Location: House - -1 and , 6, Road No. 4, Dhaka 1205, Bangladesh(23.7421428, 90.382994). Open: Monday: Open 24 hours, Tuesday: Open 24 hours, Wednesday: Open 24 hours, Thursday: Open 24 hours, Friday: Open 24 hours, Saturday: Open 24 hours, Sunday: Open 24 hours. Transit Distance from My home to Sultan's Dine is 2.6 km(37 mins). Driving Distance from My home to LABAID Specialized Hospital is 2.0 km(28 mins). Walking Distance from Sultan's Dine to LABAID Specialized Hospital is 1.6 km(22 mins). Transit Distance from LABAID Specialized Hospital to Sultan's Dine is 1.1 km(16 mins). Today is Monday. I am at My home.",
 		},
 		{
 			role: "assistant",
 			content:
-				"Sultan's Dine is located on the first floor of Green Akshay Plaza, at 146/G (Old), 59, New Satmasjid Road, Dhaka 1209, Bangladesh. My home is on Indira Road in Dhaka, Bangladesh, with the postal code 1215. LABAID Specialized Hospital is situated at House -1 and 6, Road No. 4, Dhaka 1205, Bangladesh. Sultan's Dine operates 24 hours every day of the week. The transit distance from my home to Sultan's Dine is approximately 2.6 kilometers, which would take about 37 minutes by public transport. Driving from my home to LABAID Specialized Hospital covers about 2.0 kilometers and takes around 28 minutes. Walking from Sultan's Dine to LABAID Specialized Hospital is about 1.6 kilometers and takes around 22 minutes. Conversely, traveling from LABAID Specialized Hospital to Sultan's Dine has a transit distance of about 1.1 kilometers and takes around 16 minutes by public transport.",
+				"Sultan's Dine is located on the first floor of Green Akshay Plaza, at 146/G (Old), 59, New Satmasjid Road, Dhaka 1209, Bangladesh. My home is on Indira Road in Dhaka, Bangladesh, with the postal code 1215. LABAID Specialized Hospital is situated at House -1 and 6, Road No. 4, Dhaka 1205, Bangladesh. Sultan's Dine operates 24 hours every day of the week. The transit distance from my home to Sultan's Dine is approximately 2.6 kilometers, which would take about 37 minutes by public transport. Driving from my home to LABAID Specialized Hospital covers about 2.0 kilometers and takes around 28 minutes. Walking from Sultan's Dine to LABAID Specialized Hospital is about 1.6 kilometers and takes around 22 minutes. Conversely, traveling from LABAID Specialized Hospital to Sultan's Dine has a transit distance of about 1.1 kilometers and takes around 16 minutes by public transport. Today is Monday and I am currently at my home.",
 		},
 		{
 			role: "user",
