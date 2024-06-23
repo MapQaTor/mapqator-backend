@@ -19,13 +19,12 @@ const getQuery = async (id) => {
 	const query = `
 		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
 		FROM dataset DS
-		JOIN evaluations E
+		LEFT JOIN evaluations E
 		ON DS.id = E.query_id
-		JOIN models M
+		LEFT JOIN models M
 		ON E.model_id = M.id
 		WHERE DS.id = $1
 		GROUP BY DS.id
-		ORDER BY id DESC
 	`;
 	const params = [id];
 	const result = await base.query(query, params);
@@ -51,7 +50,8 @@ const updateQuery = async (id, record) => {
 	const query = `
 			UPDATE dataset
 			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
-			WHERE id = $7 RETURNING *
+			WHERE id = $7
+			RETURNING *
 		`;
 	const params = [
 		record.question,

@@ -148,10 +148,12 @@ const getGPTContext = async (req, res) => {
 			}
 		);
 		console.log(choices[0].message["content"]);
-		res.send(choices[0].message["content"]);
+		return res.send(choices[0].message["content"]);
 	} catch (error) {
 		console.error("An error occurred:", error);
-		res.status(500).send({ success: false, error: "An error occurred" });
+		return res
+			.status(500)
+			.send({ success: false, error: "An error occurred" });
 	}
 };
 
