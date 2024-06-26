@@ -16,9 +16,30 @@ const createQuery = async (record, username) => {
 	return result;
 };
 
+const updateQuery = async (id, record) => {
+	// console.log("Record: ", record);
+	const query = `
+			UPDATE dataset
+			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
+			WHERE id = $7
+			RETURNING *
+		`;
+	const params = [
+		record.question,
+		record.answer,
+		record.context,
+		record.context_json,
+		record.classification,
+		record.context_gpt,
+		id,
+	];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getQuery = async (id) => {
 	const query = `
-		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
+		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
 		FROM dataset DS
 		LEFT JOIN evaluations E
 		ON DS.id = E.query_id
@@ -44,26 +65,6 @@ const getQueries = async () => {
 		ORDER BY id DESC
 	`;
 	const result = await base.query(query);
-	return result;
-};
-
-const updateQuery = async (id, record) => {
-	const query = `
-			UPDATE dataset
-			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
-			WHERE id = $7
-			RETURNING *
-		`;
-	const params = [
-		record.question,
-		record.answer,
-		record.context,
-		record.context_json,
-		record.classification,
-		record.context_gpt,
-		id,
-	];
-	const result = await base.query(query, params);
 	return result;
 };
 
