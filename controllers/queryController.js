@@ -69,7 +69,7 @@ const getGPTContext = async (req, res) => {
 		{
 			role: "user",
 			content:
-				"I will give you some structured information, you need to convert them to more humanly language. This is a context for a question. So, I want the context to be more humanly.",
+				"I will give you some structured information, you need to convert them to more humanly language. This is a context for a question. So, I want the context to be more humanly. Also, translate any Non-English language to English.",
 		},
 		{
 			role: "user",
@@ -127,7 +127,8 @@ const getGPTContext = async (req, res) => {
 			role: "assistant",
 			content: `Bangladesh University of Engineering and Technology (BUET) is located in Polashi, Dhaka, Bangladesh. Nearby cafes with the keyword "metro" include Coffee Buzz, Pinewood Cafe n' Restaurant, Gloria Jean's Coffees, Cafe Air - Bell Pepper, Cloud Coffee - Agargaon, Roseate Cafe, Pinewood Cafe + Kitchen, Tagore Terrace, Cooper's Coffee Shop, Sub-Street Twist, Metro Baker's and Cafe, Lal Math Tee Zone, IZ pâtisserie and café, AD Mart 5 Point Garden Cafe, Fusion (AD Canteen), and Neuve'mi Cafe & Restro.
 
-      Within a 1000-meter radius of BUET, there are also several cafes such as BUET Staff Canteen, মুক্তি কর্নার, Mannan Vai's Canteen, রাসেল ভাইয়ের দোকান, Nasir Tea Stall, Tea Stall (With Chicken Flavour), Jahir's Cantine, The Nineteenth Coffee, Kalapata Kichen, সালাম ষ্টোর, Takeaway Polashi, Mon Chai Ca, Awake Coffee Roasters at British Council, আর এস স্ন্যাকস্ কর্ণার, Ohi's Tong, Mashallah Tea Store, মালেক টি টি স্টোর, Juan cafe, Mustafa mia Store, and ফারুক মামার দোকান.`,
+Within a 1000-meter radius of BUET, there are also several cafes such as BUET Staff Canteen, Mukti Corner, Mannan Vai's Canteen, Russel Bhai's Shop, Nasir Tea Stall, Tea Stall (With Chicken Flavor), Jahir's Canteen, The Nineteenth Coffee, Kalapata Kitchen, Salam Store, Takeaway Polashi, Mon Chai Ca, Awake Coffee Roasters at British Council, RS Snacks Corner, Ohi's Tong, Mashallah Tea Store, Malek Tea Store, Juan Cafe, Mustafa Mia Store, and Faruk Mama's Shop.
+`,
 		},
 		{
 			role: "user",
