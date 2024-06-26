@@ -1,8 +1,8 @@
 const base = require("./base");
 
-const createQuery = async (record) => {
+const createQuery = async (record, username) => {
 	const query =
-		"INSERT INTO dataset (question, answer, context, context_json, classification, context_gpt) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *";
+		"INSERT INTO dataset (question, answer, context, context_json, classification, context_gpt, username) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *";
 	const params = [
 		record.question,
 		record.answer,
@@ -10,6 +10,7 @@ const createQuery = async (record) => {
 		record.context_json,
 		record.classification,
 		record.context_gpt,
+		username,
 	];
 	const result = await base.query(query, params);
 	return result;
@@ -33,7 +34,7 @@ const getQuery = async (id) => {
 
 const getQueries = async () => {
 	const query = `
-		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
+		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
 		FROM dataset DS
 		LEFT JOIN evaluations E
 		ON DS.id = E.query_id

@@ -9,7 +9,8 @@ const client = new OpenAIClient(
 
 const createQuery = async (req, res) => {
 	const query = req.body;
-	const result = await queryRepository.createQuery(query);
+	const { username } = req.user;
+	const result = await queryRepository.createQuery(query, username);
 	if (result.success) {
 		res.status(201).send(result.data);
 	} else {

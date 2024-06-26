@@ -1,7 +1,8 @@
 const queryController = require("../controllers/queryController");
+const { authenticateJWT } = require("../middlewares/authMiddleware");
 
 const router = require("express").Router();
-
+router.use(authenticateJWT);
 router.get("/dataset", queryController.getDataset);
 
 router.post("/gpt/context", queryController.getGPTContext);

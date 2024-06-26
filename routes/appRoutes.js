@@ -4,7 +4,7 @@ const queryRoutes = require("./queryRoutes");
 const gptRoutes = require("./gptRoutes");
 const mapRoutes = require("./mapRoutes");
 const base = require("../repositories/base");
-
+require("../services/passport");
 router.get("/", async (req, res) => {
 	const result = await base.check();
 	if (result.success) {
@@ -19,5 +19,6 @@ router.use("/queries", queryRoutes);
 router.use("/gpt", gptRoutes);
 router.use("/map", mapRoutes);
 router.use("/evaluation", require("./evaluationRoutes"));
+router.use("/auth", require("./authRoutes"));
 
 module.exports = router;
