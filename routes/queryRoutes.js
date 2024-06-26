@@ -2,15 +2,15 @@ const queryController = require("../controllers/queryController");
 const { authenticateJWT } = require("../middlewares/authMiddleware");
 
 const router = require("express").Router();
-router.use(authenticateJWT);
+
 router.get("/dataset", queryController.getDataset);
 
-router.post("/gpt/context", queryController.getGPTContext);
-router.post("/", queryController.createQuery);
-router.get("/:id", queryController.getQuery);
+router.post("/gpt/context", authenticateJWT, queryController.getGPTContext);
+router.post("/", authenticateJWT, queryController.createQuery);
+router.get("/:id", authenticateJWT, queryController.getQuery);
 
-router.get("/", queryController.getQueries);
-router.put("/:id", queryController.updateQuery);
-router.delete("/:id", queryController.deleteQuery);
+router.get("/", authenticateJWT, queryController.getQueries);
+router.put("/:id", authenticateJWT, queryController.updateQuery);
+router.delete("/:id", authenticateJWT, queryController.deleteQuery);
 
 module.exports = router;
