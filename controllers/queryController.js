@@ -69,7 +69,7 @@ const getGPTContext = async (req, res) => {
 		{
 			role: "user",
 			content:
-				"I will give you some structured information, you need to convert them to more humanly language. This is a context for a question. So, I want the context to be more humanly. Also, translate any Non-English language to English.",
+				"I will give you some structured information, you need to convert them to more humanly language. This is context for place related question. So, I want the context to be more humanly. Also, translate any Non-English part to English.",
 		},
 		{
 			role: "user",
