@@ -11,6 +11,7 @@ const getDistance = async (req, res) => {
 					destinations: "place_id:" + req.query.destination,
 					mode: req.query.mode,
 					key: process.env.GOOGLE_MAPS_API_KEY,
+					language: "en",
 				},
 			}
 		);
@@ -73,6 +74,7 @@ const searchNearby = async (req, res) => {
 					keyword: req.query.keyword,
 					rankby: req.query.rankby,
 					key: process.env.GOOGLE_MAPS_API_KEY,
+					language: "en",
 				},
 			}
 		);
@@ -116,6 +118,7 @@ const getDetails = async (req, res) => {
 				params: {
 					place_id: req.params.id,
 					key: process.env.GOOGLE_MAPS_API_KEY,
+					language: "en",
 				},
 			}
 		);
@@ -163,6 +166,7 @@ const searchText = async (req, res) => {
 				params: {
 					query: req.query.query,
 					key: process.env.GOOGLE_MAPS_API_KEY,
+					language: "en",
 				},
 			}
 		);
