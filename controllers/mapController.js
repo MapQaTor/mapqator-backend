@@ -23,6 +23,29 @@ const getDistance = async (req, res) => {
 	}
 };
 
+const getDirections = async (req, res) => {
+	try {
+		const response = await axios.get(
+			"https://maps.googleapis.com/maps/api/directions/json",
+			{
+				params: {
+					origin: "place_id:" + req.query.origin,
+					destination: "place_id:" + req.query.destination,
+					key: process.env.GOOGLE_MAPS_API_KEY,
+					mode: req.query.mode,
+					language: "en",
+					alternatives: true,
+				},
+			}
+		);
+		console.log(response.data);
+		res.status(200).send(response.data);
+	} catch (error) {
+		res.status(400).send({ error: "An error occurred" });
+		console.error(error.message);
+	}
+};
+
 const searchNearbyNew = async (req, res) => {
 	try {
 		const response = await axios.post(
@@ -123,7 +146,7 @@ const getDetails = async (req, res) => {
 			}
 		);
 
-		console.log(response.data);
+		console.log(response.data.result.address_components);
 		res.status(200).send(response.data);
 	} catch (error) {
 		console.error(error.message);
@@ -171,6 +194,7 @@ const searchText = async (req, res) => {
 			}
 		);
 
+		console.log(response.data);
 		res.status(200).send(response.data);
 	} catch (error) {
 		console.error(error.message);
@@ -183,4 +207,5 @@ module.exports = {
 	searchText,
 	getDetails,
 	getDistance,
+	getDirections,
 };
