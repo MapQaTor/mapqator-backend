@@ -10,7 +10,12 @@ const insertResult = async (result) => {
             RETURNING *
         `;
 		const params = [row.query_id, row.model_id, row.answer, row.verdict];
-		await base.query(query, params);
+		try {
+			await base.query(query, params);
+		} catch (error) {
+			// Handle the error appropriately
+			console.error("Error executing query:", error);
+		}
 	}
 	return { success: true };
 };
