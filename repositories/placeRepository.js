@@ -57,7 +57,7 @@ const createPlace = async (place) => {
 };
 
 const getPlace = async (id) => {
-	const query = "SELECT * FROM places WHERE id = $1";
+	const query = "SELECT * FROM places WHERE place_id = $1";
 	const params = [id];
 	const result = await base.query(query, params);
 	return result;

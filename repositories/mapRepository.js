@@ -29,16 +29,8 @@ const getDirections = async (origin, destination, mode) => {
 	return result;
 };
 
-const searchNearby = async (location, radius, type) => {
-	const query = `SELECT * FROM search_nearby($1, $2, $3)`;
-	const params = [location, radius, type];
-	const result = await base.query(query, params);
-	return result;
-};
-
 module.exports = {
 	getDistance,
 	getDirections,
-	searchNearby,
 	addDistance,
 };

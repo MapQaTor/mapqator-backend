@@ -1,6 +1,6 @@
 const axios = require("axios");
 const mapRepository = require("../repositories/mapRepository");
-
+const placeRepository = require("../repositories/placeRepository");
 const getDistance = async (req, res) => {
 	console.log(
 		req.query.origin,
@@ -169,23 +169,30 @@ const getDetailsNew = async (req, res) => {
 };
 
 const getDetails = async (req, res) => {
-	try {
-		const response = await axios.get(
-			"https://maps.googleapis.com/maps/api/place/details/json",
-			{
-				params: {
-					place_id: req.params.id,
-					key: process.env.GOOGLE_MAPS_API_KEY,
-					language: "en",
-				},
-			}
-		);
+	const local = await placeRepository.getPlace(req.params.id);
 
-		console.log(response.data.result.address_components);
-		res.status(200).send(response.data);
-	} catch (error) {
-		console.error(error.message);
-		res.status(400).send({ error: "An error occurred" });
+	if (local.success && local.data.length > 0) {
+		return res.status(200).send({ result: local.data[0] });
+	} else {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/details/json",
+				{
+					params: {
+						place_id: req.params.id,
+						key: process.env.GOOGLE_MAPS_API_KEY,
+						language: "en",
+					},
+				}
+			);
+			const details = JSON.parse(JSON.stringify(response.data.result));
+			// console.log(details);
+			placeRepository.createPlace(details);
+			res.status(200).send(response.data);
+		} catch (error) {
+			console.error(error.message);
+			res.status(400).send({ error: "An error occurred" });
+		}
 	}
 };
 
