@@ -6,6 +6,7 @@ router.use(authenticateJWT);
 router.get("/search", mapController.searchText);
 router.get("/directions", mapController.getDirections);
 router.get("/nearby", mapController.searchNearby);
+router.get("/inside", mapController.searchInside);
 router.get("/details/:id", mapController.getDetails);
 router.get("/distance", mapController.getDistance);
 

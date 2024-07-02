@@ -90,6 +90,7 @@ const getDetails = async (place_id) => {
 };
 
 const addNearby = async (location, type, keyword, rankby, radius, places) => {
+	await base.startTransaction();
 	const query = `
         INSERT INTO nearby (location, type, keyword, rankby, radius)
         VALUES ($1, $2, $3, $4, $5)
@@ -107,14 +108,70 @@ const addNearby = async (location, type, keyword, rankby, radius, places) => {
 	for (const place of places) {
 		const placeParams = [nearbyId, place.place_id];
 		if (await getDetails(place.place_id)) {
-			await base.query(placeQuery, placeParams);
+			const res = await base.query(placeQuery, placeParams);
+			if (!res.success) {
+				await base.rollback();
+				return null;
+			}
 		} else {
 			console.error("Error adding nearby places");
 		}
 	}
+	await base.endTransaction();
 
 	return result;
 };
+
+const searchInside = async (location, type) => {
+	const query = `
+        SELECT I.location, I.type, json_agg(json_build_object(
+            'place_id', P.place_id,
+            'name', P.name,
+            'formatted_address', P.formatted_address
+        )) AS places
+        FROM inside I
+        JOIN inside_places IP ON IP.inside_id = I.id
+        JOIN places P ON P.place_id = IP.place_id
+        WHERE location = $1 AND type = $2
+        GROUP BY I.location, I.type
+    `;
+	const params = [location, type];
+	const result = await base.query(query, params);
+	return result;
+};
+
+const addInside = async (location, type, places) => {
+	await base.startTransaction();
+	const query = `
+        INSERT INTO inside (location, type)
+        VALUES ($1, $2)
+        RETURNING *
+    `;
+	const params = [location, type];
+	const result = await base.query(query, params);
+	if (!result.success || result.data.length === 0) return result;
+
+	const insideId = result.data[0].id;
+	const placeQuery = `
+        INSERT INTO inside_places (inside_id, place_id)
+        VALUES ($1, $2)
+    `;
+	for (const place of places) {
+		const placeParams = [insideId, place.place_id];
+		if (await getDetails(place.place_id)) {
+			const res = await base.query(placeQuery, placeParams);
+			if (!res.success) {
+				await base.rollback();
+				return null;
+			}
+		} else {
+			console.error("Error adding inside places");
+		}
+	}
+	await base.endTransaction();
+	return result;
+};
+
 module.exports = {
 	getDistance,
 	getDirections,
@@ -122,4 +179,6 @@ module.exports = {
 	addDistance,
 	searchNearby,
 	addNearby,
+	searchInside,
+	addInside,
 };

@@ -287,10 +287,49 @@ const searchText = async (req, res) => {
 	}
 };
 
+searchInside = async (req, res) => {
+	const location = req.query.location;
+	const type = req.query.type;
+	// const name = req.query.name;
+	// console.log(type + " in " + name);
+	const local = await mapRepository.searchInside(location, type);
+
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ results: local.data[0].places, status: "LOCAL" });
+	} else {
+		const place = await placeRepository.getPlace(location);
+		console.log(place);
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/textsearch/json",
+				{
+					params: {
+						query: type + " in " + place.data[0].name,
+						key: process.env.GOOGLE_MAPS_API_KEY,
+						language: "en",
+					},
+				}
+			);
+
+			if (response.data.status === "INVALID_REQUEST")
+				res.status(400).send({ error: "An error occurred" });
+			else {
+				mapRepository.addInside(location, type, response.data.results);
+				res.status(200).send(response.data);
+			}
+		} catch (error) {
+			console.error(error.message);
+			res.status(400).send({ error: "An error occurred" });
+		}
+	}
+};
 module.exports = {
 	searchNearby,
 	searchText,
 	getDetails,
 	getDistance,
 	getDirections,
+	searchInside,
 };
