@@ -59,25 +59,39 @@ const getDistance = async (req, res) => {
 };
 
 const getDirections = async (req, res) => {
-	try {
-		const response = await axios.get(
-			"https://maps.googleapis.com/maps/api/directions/json",
-			{
-				params: {
-					origin: "place_id:" + req.query.origin,
-					destination: "place_id:" + req.query.destination,
-					key: process.env.GOOGLE_MAPS_API_KEY,
-					mode: req.query.mode.toLowerCase(),
-					language: "en",
-					alternatives: true,
-				},
-			}
-		);
-		console.log(response.data);
-		res.status(200).send(response.data);
-	} catch (error) {
-		res.status(400).send({ error: "An error occurred" });
-		console.error(error.message);
+	const origin = req.query.origin;
+	const destination = req.query.destination;
+	const mode = req.query.mode.toLowerCase();
+
+	const local = await mapRepository.getDirections(origin, destination, mode);
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ routes: local.data[0].routes, status: "LOCAL" });
+	} else {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/directions/json",
+				{
+					params: {
+						origin: "place_id:" + origin,
+						destination: "place_id:" + destination,
+						key: process.env.GOOGLE_MAPS_API_KEY,
+						mode: mode,
+						language: "en",
+						alternatives: true,
+					},
+				}
+			);
+
+			const details = JSON.parse(JSON.stringify(response.data.routes));
+			mapRepository.addDirections(origin, destination, mode, details);
+			// console.log(response.data);
+			res.status(200).send(response.data);
+		} catch (error) {
+			res.status(400).send({ error: "An error occurred" });
+			console.error(error.message);
+		}
 	}
 };
 
@@ -172,7 +186,7 @@ const getDetails = async (req, res) => {
 	const local = await placeRepository.getPlace(req.params.id);
 
 	if (local.success && local.data.length > 0) {
-		return res.status(200).send({ result: local.data[0] });
+		return res.status(200).send({ result: local.data[0], status: "LOCAL" });
 	} else {
 		try {
 			const response = await axios.get(
