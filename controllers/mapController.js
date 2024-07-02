@@ -1,7 +1,11 @@
 const axios = require("axios");
 
 const getDistance = async (req, res) => {
-	console.log(req.query.origin, req.query.destination, req.query.mode);
+	console.log(
+		req.query.origin,
+		req.query.destination,
+		req.query.mode.toLowerCase()
+	);
 	try {
 		const response = await axios.get(
 			"https://maps.googleapis.com/maps/api/distancematrix/json",
@@ -9,13 +13,13 @@ const getDistance = async (req, res) => {
 				params: {
 					origins: "place_id:" + req.query.origin,
 					destinations: "place_id:" + req.query.destination,
-					mode: req.query.mode,
+					mode: req.query.mode.toLowerCase(),
 					key: process.env.GOOGLE_MAPS_API_KEY,
 					language: "en",
 				},
 			}
 		);
-		// console.log(response.data);
+		// console.log(response.data.rows);
 		res.status(200).send(response.data);
 	} catch (error) {
 		res.status(400).send({ error: "An error occurred" });
@@ -32,7 +36,7 @@ const getDirections = async (req, res) => {
 					origin: "place_id:" + req.query.origin,
 					destination: "place_id:" + req.query.destination,
 					key: process.env.GOOGLE_MAPS_API_KEY,
-					mode: req.query.mode,
+					mode: req.query.mode.toLowerCase(),
 					language: "en",
 					alternatives: true,
 				},
