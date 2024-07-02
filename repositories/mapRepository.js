@@ -1,5 +1,6 @@
 const base = require("./base");
-
+const axios = require("axios");
+const placeRepository = require("./placeRepository");
 const getDistance = async (origin, destination, mode) => {
 	const query = `
         SELECT *
@@ -44,9 +45,81 @@ const addDirections = async (origin, destination, mode, directions) => {
 	return result;
 };
 
+const searchNearby = async (location, type, keyword, rankby, radius) => {
+	const query = `
+        SELECT N.location, N.type, N.keyword, N.rankby, N.radius, json_agg(json_build_object(
+            'place_id', P.place_id,
+            'name', P.name,
+            'vicinity', P.formatted_address
+        )) AS places
+        FROM nearby N
+        JOIN nearby_places NP ON NP.nearby_id = N.id
+        JOIN places P ON P.place_id = NP.place_id
+        WHERE location = $1 AND type = $2 AND keyword = $3 AND rankby = $4 AND radius = $5
+        GROUP BY N.id, N.location, N.type, N.keyword, N.rankby, N.radius
+    `;
+	const params = [location, type, keyword, rankby, radius];
+	const result = await base.query(query, params);
+	return result;
+};
+
+const getDetails = async (place_id) => {
+	const local = await placeRepository.getPlace(place_id);
+	if (local.success && local.data.length > 0) {
+		return local.data[0];
+	} else {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/details/json",
+				{
+					params: {
+						place_id: place_id,
+						key: process.env.GOOGLE_MAPS_API_KEY,
+						language: "en",
+					},
+				}
+			);
+			const details = JSON.parse(JSON.stringify(response.data.result));
+			await placeRepository.createPlace(details);
+			return response.data;
+		} catch (error) {
+			console.error(error.message);
+			return null;
+		}
+	}
+};
+
+const addNearby = async (location, type, keyword, rankby, radius, places) => {
+	const query = `
+        INSERT INTO nearby (location, type, keyword, rankby, radius)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *
+    `;
+	const params = [location, type, keyword, rankby, radius];
+	const result = await base.query(query, params);
+	if (!result.success || result.data.length === 0) return result;
+
+	const nearbyId = result.data[0].id;
+	const placeQuery = `
+        INSERT INTO nearby_places (nearby_id, place_id)
+        VALUES ($1, $2)
+    `;
+	for (const place of places) {
+		const placeParams = [nearbyId, place.place_id];
+		if (await getDetails(place.place_id)) {
+			await base.query(placeQuery, placeParams);
+		} else {
+			console.error("Error adding nearby places");
+		}
+	}
+
+	return result;
+};
 module.exports = {
 	getDistance,
 	getDirections,
 	addDirections,
 	addDistance,
+	searchNearby,
+	addNearby,
 };

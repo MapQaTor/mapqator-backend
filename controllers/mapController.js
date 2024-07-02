@@ -135,29 +135,58 @@ const searchNearbyNew = async (req, res) => {
 
 const searchNearby = async (req, res) => {
 	console.log(req.query);
-	try {
-		const response = await axios.get(
-			"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
-			{
-				params: {
-					location: req.query.lat + "," + req.query.lng,
-					radius: req.query.radius,
-					type: req.query.type,
-					keyword: req.query.keyword,
-					rankby: req.query.rankby,
-					key: process.env.GOOGLE_MAPS_API_KEY,
-					language: "en",
-				},
-			}
-		);
+	const location = req.query.location;
+	const type = req.query.type || "any";
+	const keyword = req.query.keyword || "";
+	const rankby = req.query.rankby || "prominence";
+	const radius = req.query.radius || 1;
+	const local = await mapRepository.searchNearby(
+		location,
+		type,
+		keyword,
+		rankby,
+		radius
+	);
 
-		console.log(response.data);
-		if (response.data.status === "INVALID_REQUEST")
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ results: local.data[0].places, status: "LOCAL" });
+	} else {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+				{
+					params: {
+						location: req.query.lat + "," + req.query.lng,
+						radius: req.query.radius,
+						type: req.query.type,
+						keyword: req.query.keyword,
+						rankby: req.query.rankby,
+						key: process.env.GOOGLE_MAPS_API_KEY,
+						language: "en",
+					},
+				}
+			);
+
+			console.log(response.data);
+			if (response.data.status === "INVALID_REQUEST")
+				res.status(400).send({ error: "An error occurred" });
+			else {
+				mapRepository.addNearby(
+					location,
+					type,
+					keyword,
+					rankby,
+					radius,
+					response.data.results
+				);
+				res.status(200).send(response.data);
+			}
+		} catch (error) {
+			console.error(error.message);
 			res.status(400).send({ error: "An error occurred" });
-		else res.status(200).send(response.data);
-	} catch (error) {
-		console.error(error.message);
-		res.status(400).send({ error: "An error occurred" });
+		}
 	}
 };
 
