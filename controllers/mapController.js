@@ -1,4 +1,5 @@
 const axios = require("axios");
+const mapRepository = require("../repositories/mapRepository");
 
 const getDistance = async (req, res) => {
 	console.log(
@@ -6,24 +7,54 @@ const getDistance = async (req, res) => {
 		req.query.destination,
 		req.query.mode.toLowerCase()
 	);
-	try {
-		const response = await axios.get(
-			"https://maps.googleapis.com/maps/api/distancematrix/json",
-			{
-				params: {
-					origins: "place_id:" + req.query.origin,
-					destinations: "place_id:" + req.query.destination,
-					mode: req.query.mode.toLowerCase(),
-					key: process.env.GOOGLE_MAPS_API_KEY,
-					language: "en",
+	const origin = req.query.origin;
+	const destination = req.query.destination;
+	const mode = req.query.mode.toLowerCase();
+
+	const local = await mapRepository.getDistance(origin, destination, mode);
+	if (local.success && local.data.length > 0) {
+		return res.status(200).send({
+			rows: [
+				{
+					elements: [
+						{
+							distance: local.data[0].distance,
+							duration: local.data[0].duration,
+							status: "LOCAL",
+						},
+					],
 				},
-			}
-		);
-		// console.log(response.data.rows);
-		res.status(200).send(response.data);
-	} catch (error) {
-		res.status(400).send({ error: "An error occurred" });
-		console.error(error.message);
+			],
+		});
+	} else {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/distancematrix/json",
+				{
+					params: {
+						origins: "place_id:" + origin,
+						destinations: "place_id:" + destination,
+						mode: mode,
+						key: process.env.GOOGLE_MAPS_API_KEY,
+						language: "en",
+					},
+				}
+			);
+			const details = JSON.parse(
+				JSON.stringify(response.data.rows[0].elements[0])
+			);
+			mapRepository.addDistance(
+				origin,
+				destination,
+				mode,
+				details.distance,
+				details.duration
+			);
+			res.status(200).send(response.data);
+		} catch (error) {
+			res.status(400).send({ error: "An error occurred" });
+			console.error(error.message);
+		}
 	}
 };
 
