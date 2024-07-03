@@ -1,33 +1,18 @@
 const axios = require("axios");
 const mapRepository = require("../repositories/mapRepository");
 const placeRepository = require("../repositories/placeRepository");
-const getDistance = async (req, res) => {
-	console.log(
-		req.query.origin,
-		req.query.destination,
-		req.query.mode.toLowerCase()
-	);
-	const origin = req.query.origin;
-	const destination = req.query.destination;
-	const mode = req.query.mode.toLowerCase();
 
+const getSingleDistance = async (origin, destination, mode) => {
 	const local = await mapRepository.getDistance(origin, destination, mode);
 	if (local.success && local.data.length > 0) {
-		return res.status(200).send({
-			rows: [
-				{
-					elements: [
-						{
-							distance: local.data[0].distance,
-							duration: local.data[0].duration,
-							status: "LOCAL",
-						},
-					],
-				},
-			],
-		});
+		return {
+			distance: local.data[0].distance,
+			duration: local.data[0].duration,
+			status: "LOCAL",
+		};
 	} else {
 		try {
+			console.log(origin, destination, mode);
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/distancematrix/json",
 				{
@@ -43,6 +28,7 @@ const getDistance = async (req, res) => {
 			const details = JSON.parse(
 				JSON.stringify(response.data.rows[0].elements[0])
 			);
+
 			mapRepository.addDistance(
 				origin,
 				destination,
@@ -50,12 +36,45 @@ const getDistance = async (req, res) => {
 				details.distance,
 				details.duration
 			);
-			res.status(200).send(response.data);
+
+			return details;
 		} catch (error) {
-			res.status(400).send({ error: "An error occurred" });
 			console.error(error.message);
+			return null;
 		}
 	}
+};
+
+const getDistance = async (req, res) => {
+	console.log(
+		req.query.origin,
+		req.query.destination,
+		req.query.mode.toLowerCase()
+	);
+	const origin = req.query.origin.split(",");
+	const destination = req.query.destination.split(",");
+	const mode = req.query.mode.toLowerCase();
+	const matrix = [];
+	for (let i = 0; i < origin.length; i++) {
+		const o = origin[i];
+		const row = [];
+		for (let j = 0; j < destination.length; j++) {
+			const d = destination[j];
+			if (o === d) {
+				row.push({
+					distance: { text: "0 km", value: 0 },
+					duration: { text: "0 mins", value: 0 },
+					status: "LOCAL",
+				});
+			} else {
+				const distanceData = await getSingleDistance(o, d, mode);
+				row.push(distanceData);
+			}
+		}
+		matrix.push(row);
+	}
+	console.log(matrix);
+	res.status(200).send({ matrix: matrix });
 };
 
 const getDirections = async (req, res) => {
