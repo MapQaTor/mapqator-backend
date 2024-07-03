@@ -230,8 +230,9 @@ const getDetails = async (req, res) => {
 			);
 			const details = JSON.parse(JSON.stringify(response.data.result));
 			// console.log(details);
-			placeRepository.createPlace(details);
-			res.status(200).send(response.data);
+			const result = await placeRepository.createPlace(details);
+			console.log(result);
+			res.status(200).send({ result: result.data[0], status: "LOCAL" });
 		} catch (error) {
 			console.error(error.message);
 			res.status(400).send({ error: "An error occurred" });
