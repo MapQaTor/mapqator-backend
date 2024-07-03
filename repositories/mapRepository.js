@@ -110,7 +110,7 @@ const addNearby = async (location, type, keyword, rankby, radius, places) => {
 		if (await getDetails(place.place_id)) {
 			const res = await base.query(placeQuery, placeParams);
 			if (!res.success) {
-				await base.rollback();
+				await base.rollbackTransaction();
 				return null;
 			}
 		} else {
@@ -161,7 +161,7 @@ const addInside = async (location, type, places) => {
 		if (await getDetails(place.place_id)) {
 			const res = await base.query(placeQuery, placeParams);
 			if (!res.success) {
-				await base.rollback();
+				await base.rollbackTransaction();
 				return null;
 			}
 		} else {
