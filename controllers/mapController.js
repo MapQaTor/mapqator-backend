@@ -169,7 +169,7 @@ const searchNearby = async (req, res) => {
 				}
 			);
 
-			console.log(response.data);
+			// console.log(response.data);
 			if (response.data.status === "INVALID_REQUEST")
 				res.status(400).send({ error: "An error occurred" });
 			else {
@@ -214,7 +214,7 @@ const getDetailsNew = async (req, res) => {
 const getDetails = async (req, res) => {
 	const local = await placeRepository.getPlace(req.params.id);
 
-	if (local.success && local.data.length > 0) {
+	if (local.success && local.data.length > 0 && local.data[0].last_updated) {
 		return res.status(200).send({ result: local.data[0], status: "LOCAL" });
 	} else {
 		try {

@@ -65,7 +65,7 @@ const searchNearby = async (location, type, keyword, rankby, radius) => {
 
 const getDetails = async (place_id) => {
 	const local = await placeRepository.getPlace(place_id);
-	if (local.success && local.data.length > 0) {
+	if (local.success && local.data.length > 0 && local.data[0].last_updated) {
 		return local.data[0];
 	} else {
 		try {
