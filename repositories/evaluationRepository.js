@@ -1,6 +1,7 @@
 const base = require("./base");
 
 const insertResult = async (result) => {
+	await base.delete_redis("rediskey" + "Queries");
 	for (const row of result) {
 		const query = `
             INSERT INTO evaluations (query_id, model_id, answer, verdict)
