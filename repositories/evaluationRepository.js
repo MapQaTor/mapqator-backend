@@ -1,7 +1,6 @@
 const base = require("./base");
 
 const insertResult = async (result) => {
-	await base.delete_redis("rediskey" + "Queries");
 	for (const row of result) {
 		const query = `
             INSERT INTO evaluations (query_id, model_id, answer, verdict)
@@ -13,6 +12,8 @@ const insertResult = async (result) => {
 		const params = [row.query_id, row.model_id, row.answer, row.verdict];
 		await base.query(query, params);
 	}
+
+	await base.delete_redis("rediskey" + "Queries");
 	return { success: true };
 };
 
