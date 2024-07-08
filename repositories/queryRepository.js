@@ -17,7 +17,6 @@ const createQuery = async (record, username) => {
 };
 
 const updateQuery = async (id, record) => {
-	await base.delete_redis("rediskey" + "Queries");
 	const query = `
 			UPDATE dataset
 			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
@@ -34,6 +33,7 @@ const updateQuery = async (id, record) => {
 		id,
 	];
 	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
 	return result;
 };
 
@@ -70,10 +70,10 @@ const getQueries = async () => {
 };
 
 const deleteQuery = async (id) => {
-	await base.delete_redis("rediskey" + "Queries");
 	const query = "DELETE FROM dataset WHERE id = $1";
 	const params = [id];
 	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
 	return result;
 };
 
