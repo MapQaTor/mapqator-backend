@@ -79,9 +79,10 @@ const deleteQuery = async (id) => {
 
 const getDataset = async () => {
 	const query = `
-		SELECT *
-		FROM dataset
-	`;
+        SELECT *
+        FROM dataset
+        WHERE id NOT IN (SELECT query_id FROM evaluations)
+    `;
 	const result = await base.query(query);
 	return result;
 };
