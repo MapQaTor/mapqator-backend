@@ -141,7 +141,7 @@ Within a 1000-meter radius of BUET, there are also several cafes such as BUET St
 			"GPT-35-TURBO-0125",
 			message_text,
 			{
-				max_tokens: 800,
+				max_tokens: 4096,
 				temperature: 0,
 				top_p: 1,
 				frequency_penalty: 0,

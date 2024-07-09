@@ -78,7 +78,10 @@ const deleteQuery = async (id) => {
 };
 
 const getDataset = async () => {
-	const query = "SELECT * FROM dataset";
+	const query = `
+		SELECT *
+		FROM dataset
+	`;
 	const result = await base.query(query);
 	return result;
 };
