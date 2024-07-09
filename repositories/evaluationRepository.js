@@ -41,9 +41,19 @@ const getResultsByModel = async (model_id) => {
 	return result;
 };
 
+const deleteEvaluationByQuery = async (query_id) => {
+	console.log("Deleting evaluations for query_id: " + query_id);
+	const query = "DELETE FROM evaluations WHERE query_id = $1";
+	const params = [query_id];
+	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
+	return result;
+};
+
 module.exports = {
 	insertResult,
 	getAllResults,
 	getResultsByQuery,
 	getResultsByModel,
+	deleteEvaluationByQuery,
 };

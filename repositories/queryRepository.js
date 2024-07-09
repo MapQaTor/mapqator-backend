@@ -1,5 +1,5 @@
 const base = require("./base");
-
+const evaluationRepository = require("./evaluationRepository");
 const createQuery = async (record, username) => {
 	const query =
 		"INSERT INTO dataset (question, answer, context, context_json, classification, context_gpt, username) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *";
@@ -17,6 +17,7 @@ const createQuery = async (record, username) => {
 };
 
 const updateQuery = async (id, record) => {
+	await evaluationRepository.deleteEvaluationByQuery(id);
 	const query = `
 			UPDATE dataset
 			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
