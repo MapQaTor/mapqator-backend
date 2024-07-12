@@ -68,6 +68,14 @@ const getPlace = async (id) => {
 	return result;
 };
 
+const getPlaceByName = async (name) => {
+	console.log(name);
+	const query = "SELECT * FROM places WHERE name = $1";
+	const params = [name];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getPlaces = async () => {
 	const query = "SELECT * FROM places";
 	const key = "rediskey" + "Places";
@@ -105,4 +113,5 @@ module.exports = {
 	getPlaces,
 	updatePlace,
 	deletePlace,
+	getPlaceByName,
 };

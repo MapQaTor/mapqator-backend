@@ -200,7 +200,107 @@ Within a 1000-meter radius of BUET, there are also several cafes such as BUET St
 	}
 };
 
+tools = [
+	{
+		type: "function",
+		function: {
+			name: "getPlaceDetails",
+			description: "Get the full details of a place",
+			parameters: {
+				type: "object",
+				properties: {
+					place: {
+						type: "string",
+						description:
+							"The name of the place to get details for.",
+					},
+					address: {
+						type: "string",
+						description:
+							"The address of the place to get details for.",
+					},
+				},
+				required: ["place", "address"],
+			},
+		},
+	},
+];
+
 const askGPT = async (req, res) => {
+	const result = await queryRepository.getQuery(req.params.id);
+	if (result.success) {
+		const { question, context_gpt, answer } = result.data[0];
+
+		// Convert answer.options to string
+		const options = answer.options
+			.map((option, index) => "Option " + (index + 1) + ". " + option)
+			.join("\n");
+		const message_text = [
+			{
+				role: "system",
+				content:
+					"You are an AI assistant that helps people find information.",
+			},
+			{
+				role: "user",
+				content: `I will ask you MCQ questions. You just need to answer numerically (e.g., 1/2/...). No explanation needed.only a number for example if its option 3 just say 3`,
+			},
+			{
+				role: "user",
+				content: `Question:\n${question} Options:\n${options}`,
+			},
+		];
+
+		console.log(`Question:\n${question} Options:\n${options}`);
+		try {
+			const { choices } = await client.getChatCompletions(
+				"GPT-35-TURBO-0125",
+				question,
+				{
+					max_tokens: 4096,
+					temperature: 0,
+					top_p: 1,
+					frequency_penalty: 0,
+					presence_penalty: 0,
+					// stop: ["\n"],
+					messages: message_text,
+					tools: tools,
+				}
+			);
+			// check if choices[0].message["content"] is a number
+			// if not, return the message
+			// if it is a number, check if it is within the range of the options
+			// if not, return the message
+			// if it is within the range of the options, return the message
+			response_message = choices[0].message;
+			message_text.push(response_message);
+			console.log(response_message);
+			toolCalls = response_message.toolCalls;
+
+			if (toolCalls.length > 0) {
+				toolCalls.forEach((toolCall) => {
+					if (toolCall.name === "getPlaceDetails") {
+						const place = toolCall.parameters.place;
+						// call the function to get the place details
+						// and append the response to the message_text
+					}
+				});
+			}
+			console.log(choices[0].message);
+			res.send(choices[0].message);
+		} catch (error) {
+			console.error("An error occurred:", error);
+			res.status(500).send({
+				success: false,
+				error: "An error occurred",
+			});
+		}
+	} else {
+		res.status(404).send(result);
+	}
+};
+
+const askGPTWithContext = async (req, res) => {
 	console.log("Hit");
 	const result = await queryRepository.getQuery(req.params.id);
 	if (result.success) {
@@ -262,6 +362,7 @@ const askGPT = async (req, res) => {
 		res.status(404).send(result);
 	}
 };
+
 module.exports = {
 	generateContext,
 	translateContext,

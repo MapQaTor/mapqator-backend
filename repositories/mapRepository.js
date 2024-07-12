@@ -11,6 +11,17 @@ const getDistance = async (origin, destination, mode) => {
 	const result = await base.query(query, params);
 	return result;
 };
+const getDistanceByNames = async (origin, destination, mode) => {
+	console.log(origin, destination, mode);
+	const query = `
+		SELECT *
+		FROM distance
+		WHERE from_id = (SELECT place_id FROM places WHERE name = $1) AND to_id = (SELECT place_id FROM places WHERE name = $2) AND mode = $3
+	`;
+	const params = [origin, destination, mode];
+	const result = await base.query(query, params);
+	return result;
+};
 
 const addDistance = async (origin, destination, mode, distance, duration) => {
 	const query = `
@@ -181,4 +192,5 @@ module.exports = {
 	addNearby,
 	searchInside,
 	addInside,
+	getDistanceByNames,
 };

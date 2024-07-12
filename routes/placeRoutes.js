@@ -3,7 +3,7 @@ const { authenticateJWT } = require("../middlewares/authMiddleware");
 
 const router = require("express").Router();
 
-router.use(authenticateJWT);
+// router.use(authenticateJWT);
 router.post("/", placeController.createPlace);
 router.get("/:id", placeController.getPlace);
 router.get("/", placeController.getPlaces);
