@@ -13,6 +13,7 @@ const createQuery = async (record, username) => {
 		username,
 	];
 	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
 	return result;
 };
 
