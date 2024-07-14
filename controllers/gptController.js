@@ -226,15 +226,22 @@ tools = [
 	},
 ];
 
-const askGPT = async (req, res) => {
+const askGPTWithoutContext = async (req, res) => {
 	const result = await queryRepository.getQuery(req.params.id);
 	if (result.success) {
 		const { question, context_gpt, answer } = result.data[0];
 
 		// Convert answer.options to string
-		const options = answer.options
-			.map((option, index) => "Option " + (index + 1) + ". " + option)
-			.join("\n");
+
+		let options = ""; // Assuming prompt is initialized earlier in your code
+
+		for (let i = 0; i < answer.options.length; i++) {
+			if (answer.options[i] === "") {
+				break;
+			}
+			prompt += `Option${i + 1}: ${item.answer.options[i]}, `;
+		}
+
 		const message_text = [
 			{
 				role: "system",
@@ -300,16 +307,22 @@ const askGPT = async (req, res) => {
 	}
 };
 
-const askGPTWithContext = async (req, res) => {
+const askGPT = async (req, res) => {
 	console.log("Hit");
 	const result = await queryRepository.getQuery(req.params.id);
 	if (result.success) {
 		const { question, context_gpt, answer } = result.data[0];
 
 		// Convert answer.options to string
-		const options = answer.options
-			.map((option, index) => "Option " + (index + 1) + ". " + option)
-			.join("\n");
+		let options = ""; // Assuming prompt is initialized earlier in your code
+
+		for (let i = 0; i < answer.options.length; i++) {
+			if (answer.options[i] === "") {
+				break;
+			}
+			prompt += `Option${i + 1}: ${item.answer.options[i]}, `;
+		}
+
 		const message_text = [
 			{
 				role: "system",
