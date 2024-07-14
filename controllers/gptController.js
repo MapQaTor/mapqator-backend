@@ -239,7 +239,7 @@ const askGPTWithoutContext = async (req, res) => {
 			if (answer.options[i] === "") {
 				break;
 			}
-			prompt += `Option${i + 1}: ${item.answer.options[i]}, `;
+			options += `Option${i + 1}: ${item.answer.options[i]}, `;
 		}
 
 		const message_text = [
@@ -320,7 +320,7 @@ const askGPT = async (req, res) => {
 			if (answer.options[i] === "") {
 				break;
 			}
-			prompt += `Option${i + 1}: ${item.answer.options[i]}, `;
+			options += `Option${i + 1}: ${item.answer.options[i]}, `;
 		}
 
 		const message_text = [
