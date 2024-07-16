@@ -93,7 +93,11 @@ const getDistance = async (req, res) => {
 				});
 			} else {
 				const distanceData = await getSingleDistance(o, d, mode);
-				row.push(distanceData);
+				row.push({
+					distance: distanceData.distance,
+					duration: distanceData.duration,
+					status: "OK",
+				});
 			}
 		}
 		matrix.push(row);
