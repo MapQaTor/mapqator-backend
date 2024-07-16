@@ -1,7 +1,6 @@
 const queryRepository = require("../repositories/queryRepository");
 
 const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
-const { param } = require("../routes/queryRoutes");
 
 const client = new OpenAIClient(
 	"https://qcri-llm-rag-5.openai.azure.com/",
