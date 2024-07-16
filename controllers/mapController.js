@@ -55,7 +55,7 @@ const getLocalDistance = async (req, res) => {
 		mode
 	);
 	if (local.success && local.data.length > 0) {
-		res.status(200).send({
+		return res.status(200).send({
 			matrix: [
 				[
 					{
@@ -67,9 +67,10 @@ const getLocalDistance = async (req, res) => {
 			status: "LOCAL",
 		});
 	} else {
-		res.status(400).send({ error: "An error occurred" });
+		return res.status(400).send({ error: "An error occurred" });
 	}
 };
+
 const getDistance = async (req, res) => {
 	console.log(
 		req.query.origin,
@@ -104,6 +105,24 @@ const getDistance = async (req, res) => {
 	}
 	console.log(matrix);
 	res.status(200).send({ matrix: matrix });
+};
+
+const getLocalDirections = async (req, res) => {
+	const origin = req.query.origin;
+	const destination = req.query.destination;
+	const mode = req.query.mode.toLowerCase();
+	const local = await mapRepository.getDirectionsByNames(
+		origin,
+		destination,
+		mode
+	);
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ routes: local.data[0].routes, status: "LOCAL" });
+	} else {
+		return res.status(400).send({ error: "An error occurred" });
+	}
 };
 
 const getDirections = async (req, res) => {
@@ -238,6 +257,28 @@ const searchNearby = async (req, res) => {
 	}
 };
 
+const searchLocalNearby = async (req, res) => {
+	const location = req.query.location;
+	const type = req.query.type || "any";
+	const keyword = req.query.keyword || "";
+	const rankby = req.query.rankby || "prominence";
+	const radius = req.query.radius || 1;
+	const local = await mapRepository.searchNearbyByName(
+		location,
+		type,
+		keyword,
+		rankby,
+		radius
+	);
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ results: local.data[0].places, status: "LOCAL" });
+	} else {
+		return res.status(400).send({ error: "An error occurred" });
+	}
+};
+
 const getDetailsNew = async (req, res) => {
 	try {
 		const response = await axios.get(
@@ -346,7 +387,7 @@ const searchText = async (req, res) => {
 	}
 };
 
-searchInside = async (req, res) => {
+const searchInside = async (req, res) => {
 	const location = req.query.location;
 	const type = req.query.type;
 	// const name = req.query.name;
@@ -384,13 +425,30 @@ searchInside = async (req, res) => {
 		}
 	}
 };
+
+const searchLocalInside = async (req, res) => {
+	const location = req.query.location;
+	const type = req.query.type;
+	const local = await mapRepository.searchInsideByName(location, type);
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ results: local.data[0].places, status: "LOCAL" });
+	} else {
+		return res.status(400).send({ error: "An error occurred" });
+	}
+};
+
 module.exports = {
 	searchNearby,
+	searchLocalNearby,
 	searchText,
 	getDetails,
 	getLocalDetails,
 	getDistance,
 	getLocalDistance,
 	getDirections,
+	getLocalDirections,
 	searchInside,
+	searchLocalInside,
 };

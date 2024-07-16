@@ -23,6 +23,17 @@ const getDistanceByNames = async (origin, destination, mode) => {
 	return result;
 };
 
+const getDirectionsByNames = async (origin, destination, mode) => {
+	const query = `
+		SELECT *
+		FROM directions
+		WHERE from_id = (SELECT place_id FROM places WHERE name = $1) AND to_id = (SELECT place_id FROM places WHERE name = $2) AND mode = $3
+	`;
+	const params = [origin, destination, mode];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const addDistance = async (origin, destination, mode, distance, duration) => {
 	const query = `
         INSERT INTO distance (from_id, to_id, mode, distance, duration)
@@ -69,6 +80,24 @@ const searchNearby = async (location, type, keyword, rankby, radius) => {
         WHERE location = $1 AND type = $2 AND keyword = $3 AND rankby = $4 AND radius = $5
         GROUP BY N.id, N.location, N.type, N.keyword, N.rankby, N.radius
     `;
+	const params = [location, type, keyword, rankby, radius];
+	const result = await base.query(query, params);
+	return result;
+};
+
+const searchNearbyByName = async (location, type, keyword, rankby, radius) => {
+	const query = `
+		SELECT N.location, N.type, N.keyword, N.rankby, N.radius, json_agg(json_build_object(
+			'place_id', P.place_id,
+			'name', P.name,
+			'vicinity', P.formatted_address
+		)) AS places
+		FROM nearby N
+		JOIN nearby_places NP ON NP.nearby_id = N.id
+		JOIN places P ON P.place_id = NP.place_id
+		WHERE location = (SELECT place_id FROM places WHERE name = $1) AND type = $2 AND keyword = $3 AND rankby = $4 AND radius = $5
+		GROUP BY N.id, N.location, N.type, N.keyword, N.rankby, N.radius
+	`;
 	const params = [location, type, keyword, rankby, radius];
 	const result = await base.query(query, params);
 	return result;
@@ -151,6 +180,24 @@ const searchInside = async (location, type) => {
 	return result;
 };
 
+const searchInsideByName = async (location, type) => {
+	const query = `
+		SELECT I.location, I.type, json_agg(json_build_object(
+			'place_id', P.place_id,
+			'name', P.name,
+			'formatted_address', P.formatted_address
+		)) AS places
+		FROM inside I
+		JOIN inside_places IP ON IP.inside_id = I.id
+		JOIN places P ON P.place_id = IP.place_id
+		WHERE location = (SELECT place_id FROM places WHERE name = $1) AND type = $2
+		GROUP BY I.location, I.type
+	`;
+	const params = [location, type];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const addInside = async (location, type, places) => {
 	await base.startTransaction();
 	const query = `
@@ -189,8 +236,11 @@ module.exports = {
 	addDirections,
 	addDistance,
 	searchNearby,
+	searchNearbyByName,
 	addNearby,
 	searchInside,
+	searchInsideByName,
 	addInside,
 	getDistanceByNames,
+	getDirectionsByNames,
 };
