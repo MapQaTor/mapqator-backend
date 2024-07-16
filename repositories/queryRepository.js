@@ -57,13 +57,15 @@ const getQuery = async (id) => {
 
 const getQueries = async () => {
 	const query = `
-		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
+		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation, json_build_object('answer', H.answer, 'explanation', H.explanation, 'username', H.username) as human
 		FROM dataset DS
+		LEFT JOIN human H
+		ON DS.id = H.query_id
 		LEFT JOIN evaluations E
 		ON DS.id = E.query_id
 		LEFT JOIN models M
 		ON E.model_id = M.id
-		GROUP BY DS.id
+		GROUP BY DS.id, H.answer, H.explanation, H.username
 		ORDER BY id DESC
 	`;
 	const key = "rediskey" + "Queries";
@@ -89,6 +91,23 @@ const getDataset = async () => {
 	return result;
 };
 
+const annotate = async (query_id, human, username) => {
+	const query = `
+		INSERT INTO human (query_id, answer, explanation, username)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (query_id) 
+        DO UPDATE SET
+            answer = EXCLUDED.answer,
+            explanation = EXCLUDED.explanation,
+			username = EXCLUDED.username
+        RETURNING *
+	`;
+	const params = [query_id, human.answer, human.explanation, username];
+	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
+	return result;
+};
+
 module.exports = {
 	createQuery,
 	getQuery,
@@ -96,4 +115,5 @@ module.exports = {
 	updateQuery,
 	deleteQuery,
 	getDataset,
+	annotate,
 };

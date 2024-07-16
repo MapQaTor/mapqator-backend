@@ -43,7 +43,10 @@ const getResultsByModel = async (model_id) => {
 
 const deleteEvaluationByQuery = async (query_id) => {
 	console.log("Deleting evaluations for query_id: " + query_id);
-	const query = "DELETE FROM evaluations WHERE query_id = $1";
+	const query = `
+		DELETE FROM evaluations
+		WHERE query_id = $1 AND model_id != 0
+	`;
 	const params = [query_id];
 	const result = await base.query(query, params);
 	await base.delete_redis("rediskey" + "Queries");

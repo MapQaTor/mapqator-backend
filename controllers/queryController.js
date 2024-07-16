@@ -1,6 +1,7 @@
 const queryRepository = require("../repositories/queryRepository");
 
 const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
+const { param } = require("../routes/queryRoutes");
 
 const client = new OpenAIClient(
 	"https://qcri-llm-rag-5.openai.azure.com/",
@@ -168,6 +169,19 @@ const getDataset = async (req, res) => {
 	}
 };
 
+const annotate = async (req, res) => {
+	const human = req.body;
+	const { username } = req.user;
+	const { id } = req.params;
+	// console.log(req.params);
+	const result = await queryRepository.annotate(id, human, username);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
 module.exports = {
 	createQuery,
 	getQuery,
@@ -176,4 +190,5 @@ module.exports = {
 	deleteQuery,
 	getGPTContext,
 	getDataset,
+	annotate,
 };
