@@ -22,3 +22,6 @@ yarn.lock
 # Testing
 coverage/
 .vercel
+
+
+*.local.*
