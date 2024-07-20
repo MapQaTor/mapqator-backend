@@ -4,16 +4,8 @@ const { authenticateJWT } = require("../middlewares/authMiddleware");
 const router = require("express").Router();
 
 router.post("/", evaluationController.insertResult);
-router.get("/", authenticateJWT, evaluationController.getAllResults);
-router.get(
-	"/queries/:query_id",
-	authenticateJWT,
-	evaluationController.getResultsByQuery
-);
-router.get(
-	"/models/:model_id",
-	authenticateJWT,
-	evaluationController.getResultsByModel
-);
+router.get("/", evaluationController.getAllResults);
+router.get("/queries/:query_id", evaluationController.getResultsByQuery);
+router.get("/models/:model_id", evaluationController.getResultsByModel);
 
 module.exports = router;

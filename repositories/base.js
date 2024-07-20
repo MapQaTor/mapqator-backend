@@ -62,7 +62,7 @@ query_redis = async (key, q, params) => {
 		return JSON.parse(data);
 	}
 	let result = await query(q, params);
-	await set_redis(key, JSON.stringify(result));
+	if (result.success) await set_redis(key, JSON.stringify(result));
 	return result;
 };
 

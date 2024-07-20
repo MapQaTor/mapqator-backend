@@ -8,9 +8,8 @@ router.get("/dataset", queryController.getDataset);
 router.post("/annotate/:id", authenticateJWT, queryController.annotate);
 router.post("/gpt/context", authenticateJWT, queryController.getGPTContext);
 router.post("/", authenticateJWT, queryController.createQuery);
-router.get("/:id", authenticateJWT, queryController.getQuery);
-
-router.get("/", authenticateJWT, queryController.getQueries);
+router.get("/:id", queryController.getQuery);
+router.get("/", queryController.getQueries);
 router.put("/:id", authenticateJWT, queryController.updateQuery);
 router.delete("/:id", authenticateJWT, queryController.deleteQuery);
 
