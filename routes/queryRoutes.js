@@ -11,6 +11,7 @@ router.post("/", authenticateJWT, queryController.createQuery);
 router.get("/:id", queryController.getQuery);
 router.get("/", queryController.getQueries);
 router.put("/:id", authenticateJWT, queryController.updateQuery);
+router.put("/:id/category", authenticateJWT, queryController.updateCategory);
 router.delete("/:id", authenticateJWT, queryController.deleteQuery);
 
 module.exports = router;

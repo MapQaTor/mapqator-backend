@@ -17,6 +17,19 @@ const createQuery = async (record, username) => {
 	return result;
 };
 
+const updateCategory = async (id, category) => {
+	const query = `
+		UPDATE dataset
+		SET classification = $1
+		WHERE id = $2
+		RETURNING *
+	`;
+	const params = [category, id];
+	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
+	return result;
+};
+
 const updateQuery = async (id, record) => {
 	await evaluationRepository.deleteEvaluationByQuery(id);
 	const query = `
@@ -112,6 +125,7 @@ module.exports = {
 	createQuery,
 	getQuery,
 	getQueries,
+	updateCategory,
 	updateQuery,
 	deleteQuery,
 	getDataset,

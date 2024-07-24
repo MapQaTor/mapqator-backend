@@ -37,6 +37,17 @@ const getQueries = async (req, res) => {
 	}
 };
 
+const updateCategory = async (req, res) => {
+	const id = parseInt(req.params.id);
+	const category = req.body.category;
+	const result = await queryRepository.updateCategory(id, category);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
 const updateQuery = async (req, res) => {
 	const id = parseInt(req.params.id);
 	const query = req.body;
@@ -185,6 +196,7 @@ module.exports = {
 	createQuery,
 	getQuery,
 	getQueries,
+	updateCategory,
 	updateQuery,
 	deleteQuery,
 	getGPTContext,
