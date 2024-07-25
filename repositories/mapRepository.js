@@ -1,6 +1,24 @@
 const base = require("./base");
 const axios = require("axios");
 const placeRepository = require("./placeRepository");
+
+function convertQueryToAndSeparatedString(query) {
+	// Split the query into words, filter out empty strings, and join with '&'
+	return query.split(/\s+/).filter(Boolean).join(" & ");
+}
+
+const searchText = async (text) => {
+	const query = `
+		SELECT p.place_id, p.name, p.formatted_address, ts_rank_cd(p.search_vector, to_tsquery('simple_ts_config', $1)) AS rank
+		FROM places p
+		WHERE p.search_vector @@ to_tsquery('simple_ts_config', $1)
+		ORDER BY rank DESC
+	`;
+	const params = [convertQueryToAndSeparatedString(text)];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getDistance = async (origin, destination, mode) => {
 	const query = `
         SELECT *
@@ -250,4 +268,5 @@ module.exports = {
 	addInside,
 	getDistanceByNames,
 	getDirectionsByNames,
+	searchText,
 };

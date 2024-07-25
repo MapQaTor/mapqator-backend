@@ -408,9 +408,12 @@ const searchText = async (req, res) => {
 			res.status(400).send({ error: "An error occurred" });
 		}
 	} else {
-		res.status(400).send({
-			error: "User is not authorized to use the Google Maps API",
-		});
+		const local = await mapRepository.searchText(req.query.query);
+		console.log(local.data);
+		res.status(200).send({ results: local.data });
+		// res.status(400).send({
+		// 	error: "User is not authorized to use the Google Maps API",
+		// });
 	}
 };
 
