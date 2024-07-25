@@ -2,7 +2,7 @@ const axios = require("axios");
 const mapRepository = require("../repositories/mapRepository");
 const placeRepository = require("../repositories/placeRepository");
 
-const getSingleDistance = async (origin, destination, mode) => {
+const getSingleDistance = async (user, origin, destination, mode) => {
 	const local = await mapRepository.getDistance(origin, destination, mode);
 	if (local.success && local.data.length > 0) {
 		return {
@@ -10,7 +10,7 @@ const getSingleDistance = async (origin, destination, mode) => {
 			duration: local.data[0].duration,
 			status: "LOCAL",
 		};
-	} else {
+	} else if (user?.google_maps_api_key) {
 		try {
 			console.log(origin, destination, mode);
 			const response = await axios.get(
@@ -20,7 +20,7 @@ const getSingleDistance = async (origin, destination, mode) => {
 						origins: "place_id:" + origin,
 						destinations: "place_id:" + destination,
 						mode: mode,
-						key: process.env.GOOGLE_MAPS_API_KEY,
+						key: user.google_maps_api_key,
 						language: "en",
 					},
 				}
@@ -42,6 +42,8 @@ const getSingleDistance = async (origin, destination, mode) => {
 			console.error(error.message);
 			return null;
 		}
+	} else {
+		return null;
 	}
 };
 
@@ -93,12 +95,19 @@ const getDistance = async (req, res) => {
 					status: "LOCAL",
 				});
 			} else {
-				const distanceData = await getSingleDistance(o, d, mode);
-				row.push({
-					distance: distanceData.distance,
-					duration: distanceData.duration,
-					status: "OK",
-				});
+				const distanceData = await getSingleDistance(
+					req.user,
+					o,
+					d,
+					mode
+				);
+				if (distanceData)
+					row.push({
+						distance: distanceData.distance,
+						duration: distanceData.duration,
+						status: distanceData.status || "OK",
+					});
+				else row.push(null);
 			}
 		}
 		matrix.push(row);
@@ -135,7 +144,7 @@ const getDirections = async (req, res) => {
 		return res
 			.status(200)
 			.send({ routes: local.data[0].routes, status: "LOCAL" });
-	} else {
+	} else if (req.user?.google_maps_api_key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/directions/json",
@@ -143,7 +152,7 @@ const getDirections = async (req, res) => {
 					params: {
 						origin: "place_id:" + origin,
 						destination: "place_id:" + destination,
-						key: process.env.GOOGLE_MAPS_API_KEY,
+						key: req.user.google_maps_api_key,
 						mode: mode,
 						language: "en",
 						alternatives: true,
@@ -159,6 +168,10 @@ const getDirections = async (req, res) => {
 			res.status(400).send({ error: "An error occurred" });
 			console.error(error.message);
 		}
+	} else {
+		res.status(400).send({
+			error: "Can't find direction in the local database",
+		});
 	}
 };
 
@@ -219,7 +232,7 @@ const searchNearby = async (req, res) => {
 		return res
 			.status(200)
 			.send({ results: local.data[0].places, status: "LOCAL" });
-	} else {
+	} else if (req.user?.google_maps_api_key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
@@ -230,7 +243,7 @@ const searchNearby = async (req, res) => {
 						type: req.query.type,
 						keyword: req.query.keyword,
 						rankby: req.query.rankby,
-						key: process.env.GOOGLE_MAPS_API_KEY,
+						key: req.user.google_maps_api_key,
 						language: "en",
 					},
 				}
@@ -254,6 +267,10 @@ const searchNearby = async (req, res) => {
 			console.error(error.message);
 			res.status(400).send({ error: "An error occurred" });
 		}
+	} else {
+		res.status(400).send({
+			error: "Can't find nearby places in the local database",
+		});
 	}
 };
 
@@ -312,17 +329,16 @@ const getLocalDetails = async (req, res) => {
 
 const getDetails = async (req, res) => {
 	const local = await placeRepository.getPlace(req.params.id);
-
 	if (local.success && local.data.length > 0 && local.data[0].last_updated) {
 		return res.status(200).send({ result: local.data[0], status: "LOCAL" });
-	} else {
+	} else if (req.user?.google_maps_api_key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/place/details/json",
 				{
 					params: {
 						place_id: req.params.id,
-						key: process.env.GOOGLE_MAPS_API_KEY,
+						key: req.user.google_maps_api_key,
 						language: "en",
 					},
 				}
@@ -336,6 +352,10 @@ const getDetails = async (req, res) => {
 			console.error(error.message);
 			res.status(400).send({ error: "An error occurred" });
 		}
+	} else {
+		res.status(400).send({
+			error: "Can't find the place in the local database",
+		});
 	}
 };
 
@@ -367,23 +387,29 @@ const searchTextNew = async (req, res) => {
 };
 
 const searchText = async (req, res) => {
-	try {
-		const response = await axios.get(
-			"https://maps.googleapis.com/maps/api/place/textsearch/json",
-			{
-				params: {
-					query: req.query.query,
-					key: process.env.GOOGLE_MAPS_API_KEY,
-					language: "en",
-				},
-			}
-		);
+	if (req.user?.google_maps_api_key) {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/textsearch/json",
+				{
+					params: {
+						query: req.query.query,
+						key: req.user.google_maps_api_key,
+						language: "en",
+					},
+				}
+			);
 
-		console.log(response.data);
-		res.status(200).send(response.data);
-	} catch (error) {
-		console.error(error.message);
-		res.status(400).send({ error: "An error occurred" });
+			console.log(response.data);
+			res.status(200).send(response.data);
+		} catch (error) {
+			console.error(error.message);
+			res.status(400).send({ error: "An error occurred" });
+		}
+	} else {
+		res.status(400).send({
+			error: "User is not authorized to use the Google Maps API",
+		});
 	}
 };
 
@@ -398,7 +424,7 @@ const searchInside = async (req, res) => {
 		return res
 			.status(200)
 			.send({ results: local.data[0].places, status: "LOCAL" });
-	} else {
+	} else if (req.user?.google_maps_api_key) {
 		const place = await placeRepository.getPlace(location);
 		console.log(place);
 		try {
@@ -407,7 +433,7 @@ const searchInside = async (req, res) => {
 				{
 					params: {
 						query: type + " in " + place.data[0].name,
-						key: process.env.GOOGLE_MAPS_API_KEY,
+						key: req.user.google_maps_api_key,
 						language: "en",
 					},
 				}
@@ -423,6 +449,10 @@ const searchInside = async (req, res) => {
 			console.error(error.message);
 			res.status(400).send({ error: "An error occurred" });
 		}
+	} else {
+		res.status(400).send({
+			error: "Can't find places inside in the local database",
+		});
 	}
 };
 

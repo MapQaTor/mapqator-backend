@@ -1,8 +1,11 @@
 const mapController = require("../controllers/mapController");
-const { authenticateJWT } = require("../middlewares/authMiddleware");
+const {
+	authenticateJWT,
+	authenticateOrGuest,
+} = require("../middlewares/authMiddleware");
 
 const router = require("express").Router();
-// router.use(authenticateJWT);
+router.use(authenticateOrGuest);
 router.get("/search", mapController.searchText);
 router.get("/directions", mapController.getDirections);
 router.get("/directions/local", mapController.getLocalDirections);

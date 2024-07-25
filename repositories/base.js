@@ -4,7 +4,9 @@ const mycache = new cache({
 	deleteOnExpire: true,
 	stdTTL: 5 * 60,
 });
-require("dotenv").config();
+require("dotenv").config({
+	path: `.env${process.env.NODE_ENV ? "." + process.env.NODE_ENV : ""}`,
+});
 
 query = async (query, params) => {
 	let result;
