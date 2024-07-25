@@ -12,7 +12,9 @@ const createQuery = async (req, res) => {
 	const { username } = req.user;
 	const result = await queryRepository.createQuery(query, username);
 	if (result.success) {
-		res.status(201).send(result.data);
+		res.status(201).send(
+			(await queryRepository.getQuery(result.data.id)).data
+		);
 	} else {
 		res.status(400).send(result);
 	}
