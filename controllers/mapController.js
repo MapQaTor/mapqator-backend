@@ -259,7 +259,8 @@ const searchNearby = async (req, res) => {
 					keyword,
 					rankby,
 					radius,
-					response.data.results
+					response.data.results,
+					req.user.google_maps_api_key
 				);
 				res.status(200).send(response.data);
 			}
@@ -442,7 +443,12 @@ const searchInside = async (req, res) => {
 			if (response.data.status === "INVALID_REQUEST")
 				res.status(400).send({ error: "An error occurred" });
 			else {
-				mapRepository.addInside(location, type, response.data.results);
+				mapRepository.addInside(
+					location,
+					type,
+					response.data.results,
+					req.user.google_maps_api_key
+				);
 				res.status(200).send(response.data);
 			}
 		} catch (error) {

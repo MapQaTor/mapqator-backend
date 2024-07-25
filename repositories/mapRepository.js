@@ -103,7 +103,7 @@ const searchNearbyByName = async (location, type, keyword, rankby, radius) => {
 	return result;
 };
 
-const getDetails = async (place_id) => {
+const getDetails = async (place_id, api_key) => {
 	const local = await placeRepository.getPlace(place_id);
 	if (local.success && local.data.length > 0 && local.data[0].last_updated) {
 		return local.data[0];
@@ -114,7 +114,7 @@ const getDetails = async (place_id) => {
 				{
 					params: {
 						place_id: place_id,
-						key: process.env.GOOGLE_MAPS_API_KEY,
+						key: api_key,
 						language: "en",
 					},
 				}
@@ -129,7 +129,15 @@ const getDetails = async (place_id) => {
 	}
 };
 
-const addNearby = async (location, type, keyword, rankby, radius, places) => {
+const addNearby = async (
+	location,
+	type,
+	keyword,
+	rankby,
+	radius,
+	places,
+	api_key
+) => {
 	await base.startTransaction();
 	const query = `
         INSERT INTO nearby (location, type, keyword, rankby, radius)
@@ -147,7 +155,7 @@ const addNearby = async (location, type, keyword, rankby, radius, places) => {
     `;
 	for (const place of places) {
 		const placeParams = [nearbyId, place.place_id];
-		if (await getDetails(place.place_id)) {
+		if (await getDetails(place.place_id, api_key)) {
 			const res = await base.query(placeQuery, placeParams);
 			if (!res.success) {
 				await base.rollbackTransaction();
@@ -158,7 +166,6 @@ const addNearby = async (location, type, keyword, rankby, radius, places) => {
 		}
 	}
 	await base.endTransaction();
-
 	return result;
 };
 
@@ -198,7 +205,7 @@ const searchInsideByName = async (location, type) => {
 	return result;
 };
 
-const addInside = async (location, type, places) => {
+const addInside = async (location, type, places, api_key) => {
 	await base.startTransaction();
 	const query = `
         INSERT INTO inside (location, type)
@@ -216,7 +223,7 @@ const addInside = async (location, type, places) => {
     `;
 	for (const place of places) {
 		const placeParams = [insideId, place.place_id];
-		if (await getDetails(place.place_id)) {
+		if (await getDetails(place.place_id, api_key)) {
 			const res = await base.query(placeQuery, placeParams);
 			if (!res.success) {
 				await base.rollbackTransaction();
