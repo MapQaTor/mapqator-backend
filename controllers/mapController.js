@@ -330,7 +330,8 @@ const getDetails = async (req, res) => {
 	const local = await placeRepository.getPlace(req.params.id);
 	if (
 		local.success &&
-		local.data.length > 0 /*&& local.data[0].last_updated*/
+		local.data.length > 0 &&
+		(!key || local.data[0].last_updated)
 	) {
 		return res.status(200).send({ result: local.data[0], status: "LOCAL" });
 	} else if (key) {
