@@ -17,6 +17,20 @@ const insertResult = async (result) => {
 	return { success: true };
 };
 
+const insertResultByQuery = async (query_id, model_id, answer, verdict) => {
+	const query = `
+		INSERT INTO evaluations (query_id, model_id, answer, verdict)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (query_id, model_id) DO UPDATE SET
+		answer = $3, verdict = $4 
+		RETURNING *
+	`;
+	const params = [query_id, model_id, answer, verdict];
+	const result = await base.query(query, params);
+	await base.delete_redis("rediskey" + "Queries");
+	return result;
+};
+
 const getAllResults = async () => {
 	const query = `
 		SELECT *
@@ -59,4 +73,5 @@ module.exports = {
 	getResultsByQuery,
 	getResultsByModel,
 	deleteEvaluationByQuery,
+	insertResultByQuery,
 };

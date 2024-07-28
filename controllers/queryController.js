@@ -1,5 +1,6 @@
 const queryRepository = require("../repositories/queryRepository");
-
+const evaluationRepository = require("../repositories/evaluationRepository");
+const base = require("../repositories/base");
 const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
 const client = new OpenAIClient(
@@ -11,6 +12,41 @@ const createQuery = async (req, res) => {
 	const query = req.body;
 	const { username } = req.user;
 	const result = await queryRepository.createQuery(query, username);
+	if (result.success) {
+		res.status(201).send(
+			(await queryRepository.getQuery(result.data[0].id)).data
+		);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
+const createQueryWithEvaluation = async (req, res) => {
+	const query = req.body;
+	const { username } = req.user;
+	await base.startTransaction();
+	const result = await queryRepository.createQuery(query, username);
+	if (!result.success) {
+		await base.rollbackTransaction();
+		return res.status(400).send({ error: "Failed to create query" });
+	}
+
+	for (let i = 0; i < query.evaluation.length; i++) {
+		const evaluation = query.evaluation[i];
+		const evaluationResult = await evaluationRepository.insertResultByQuery(
+			result.data[0].id,
+			evaluation.model_id,
+			evaluation.answer,
+			evaluation.verdict
+		);
+		if (!evaluationResult.success) {
+			await base.rollbackTransaction();
+			return res
+				.status(400)
+				.send({ error: "Failed to create query with evaluation" });
+		}
+	}
+	await base.endTransaction();
 	if (result.success) {
 		res.status(201).send(
 			(await queryRepository.getQuery(result.data[0].id)).data
@@ -54,6 +90,34 @@ const updateQuery = async (req, res) => {
 	const id = parseInt(req.params.id);
 	const query = req.body;
 	const result = await queryRepository.updateQuery(id, query);
+	if (result.success) {
+		res.send((await queryRepository.getQuery(id)).data);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
+const updateQueryWithEvaluation = async (req, res) => {
+	const id = parseInt(req.params.id);
+	const query = req.body;
+	await base.startTransaction();
+	const result = await queryRepository.updateQuery(id, query);
+	for (let i = 0; i < query.evaluation.length; i++) {
+		const evaluation = query.evaluation[i];
+		const evaluationResult = await evaluationRepository.insertResultByQuery(
+			id,
+			evaluation.model_id,
+			evaluation.answer,
+			evaluation.verdict
+		);
+		if (!evaluationResult.success) {
+			await base.rollbackTransaction();
+			return res
+				.status(400)
+				.send({ error: "Failed to update query with evaluation" });
+		}
+	}
+	await base.endTransaction();
 	if (result.success) {
 		res.send((await queryRepository.getQuery(id)).data);
 	} else {
@@ -204,4 +268,6 @@ module.exports = {
 	getGPTContext,
 	getDataset,
 	annotate,
+	createQueryWithEvaluation,
+	updateQueryWithEvaluation,
 };
