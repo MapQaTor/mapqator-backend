@@ -307,6 +307,16 @@ const askGPTWithoutContext = async (req, res) => {
 	}
 };
 
+// def extract(s): for char in s: if char.isdigit(): return char return None # Return None if no numeric character is found convert to javascript
+const extract = (s) => {
+	for (let char of s) {
+		if (/\d/.test(char)) {
+			return char;
+		}
+	}
+	return null;
+};
+
 const askGPT = async (req, res) => {
 	console.log("Hit");
 	const result = await queryRepository.getQuery(req.params.id);
@@ -327,15 +337,11 @@ const askGPT = async (req, res) => {
 			{
 				role: "system",
 				content:
-					"You are an AI assistant that helps people find information.",
+					"You are an AI assistant that answers Place related MCQ questions.",
 			},
 			{
 				role: "user",
-				content: `I will ask you MCQ questions. You just need to answer numerically (e.g., 1/2/...). No explanation needed.only a number for example if its option 3 just say 3`,
-			},
-			{
-				role: "user",
-				content: `Context:\n${context_gpt} Question:\n${question} Options:\n${options}`,
+				content: `Context:\n${context_gpt} Question:\n${question} Options:\n${options}. Choose the answer from the following options (1/2/3/4). And give explanation in bracket. So, the output format will be \"Option_Number (Explanation). If there is no answer in the options, then return 0 first and explain the reason. Remember you need to answer the question only from the context, not using any of your own knowledge. If the question can't be answered from the context notify it. Also return 0 if the correct answer is not present in the options.)`,
 			},
 		];
 
@@ -347,7 +353,7 @@ const askGPT = async (req, res) => {
 				"GPT-35-TURBO-0125",
 				question,
 				{
-					max_tokens: 800,
+					max_tokens: 4096,
 					temperature: 0,
 					top_p: 1,
 					frequency_penalty: 0,
@@ -376,8 +382,56 @@ const askGPT = async (req, res) => {
 	}
 };
 
+const askGPTLive = async (req, res) => {
+	const { question, answer } = req.body.query;
+
+	let options = ""; // Assuming prompt is initialized earlier in your code
+
+	for (let i = 0; i < answer.options.length; i++) {
+		if (answer.options[i] === "") {
+			break;
+		}
+		options += `Option${i + 1}: ${answer.options[i]}, `;
+	}
+	const message_text = [
+		{
+			role: "system",
+			content:
+				"You are an AI assistant that answers Place related MCQ questions.",
+		},
+		{
+			role: "user",
+			content: `Context:\n${req.body.context} Question:\n${question}  Options:\n${options}. Choose the answer from the following options (1/2/3/4). And give explanation in bracket. So, the output format will be \"Option_Number (Explanation). If there is no answer in the options, then return 0 first and explain the reason. Remember you need to answer the question only from the context, not using any of your own knowledge. If the question can't be answered from the context notify it. Also return 0 if the correct answer is not present in the options.)`,
+		},
+	];
+
+	try {
+		const { choices } = await client.getChatCompletions(
+			"GPT-35-TURBO-0125",
+			req.body.query,
+			{
+				max_tokens: 4096,
+				temperature: 0,
+				top_p: 1,
+				frequency_penalty: 0,
+				presence_penalty: 0,
+				// stop: ["\n"],
+				messages: message_text,
+			}
+		);
+		console.log(choices[0].message["content"]);
+		return res.send(choices[0].message["content"]);
+	} catch (error) {
+		console.error("An error occurred:", error);
+		return res
+			.status(500)
+			.send({ success: false, error: "An error occurred" });
+	}
+};
+
 module.exports = {
 	generateContext,
 	translateContext,
 	askGPT,
+	askGPTLive,
 };

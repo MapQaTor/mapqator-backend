@@ -7,7 +7,7 @@ const mycache = new cache({
 require("dotenv").config({
 	path: `.env${process.env.NODE_ENV ? "." + process.env.NODE_ENV : ""}`,
 });
-
+// require("dotenv").config();
 query = async (query, params) => {
 	let result;
 	// console.log(process.env.NODE_ENV, DB_HOST, process.env.DB_HOST);
