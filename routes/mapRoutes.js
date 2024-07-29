@@ -3,9 +3,21 @@ const {
 	authenticateJWT,
 	authenticateOrGuest,
 } = require("../middlewares/authMiddleware");
-
 const router = require("express").Router();
+
+const setGoogleMapApiKey = (req, res, next) => {
+	if (!req.header("google_maps_api_key")) {
+		const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+		if (apiKey) {
+			req.headers["google_maps_api_key"] = apiKey;
+		}
+	}
+	next();
+};
+
 router.use(authenticateOrGuest);
+router.use(setGoogleMapApiKey);
+
 router.get("/search", mapController.searchText);
 router.get("/directions", mapController.getDirections);
 router.get("/directions/local", mapController.getLocalDirections);
