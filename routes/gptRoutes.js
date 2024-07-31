@@ -7,4 +7,5 @@ router.post("/ask", gptController.askGPTLive);
 router.get("/ask/:id", gptController.askGPT);
 router.post("/context", gptController.generateContext);
 router.post("/translate", gptController.translateContext);
+router.post("/generate-question", gptController.generateQuestion);
 module.exports = router;

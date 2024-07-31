@@ -78,7 +78,8 @@ const translateContext = async (req, res) => {
 
 	try {
 		const { choices } = await client.getChatCompletions(
-			"GPT-35-TURBO-0125",
+			// "GPT-35-TURBO-0125",
+			"GPT-4o",
 			message_text,
 			{
 				max_tokens: 4096,
@@ -383,7 +384,7 @@ const askGPT = async (req, res) => {
 
 const askGPTLive = async (req, res) => {
 	const { question, answer } = req.body.query;
-	console.log("Hit GPT", question, answer);
+	console.log("Hit GPT", req.body.context, question, answer);
 	let options = ""; // Assuming prompt is initialized earlier in your code
 
 	for (let i = 0; i < answer.options.length; i++) {
@@ -428,9 +429,62 @@ const askGPTLive = async (req, res) => {
 	}
 };
 
+const generateQuestion = async (req, res) => {
+	const message_text = [
+		{
+			role: "system",
+			content:
+				"You are an AI assistant that helps people generate questions.",
+		},
+		{
+			role: "user",
+			content:
+				"I will give you some information, you need to generate a question based on the information. The question should sound like user is asking a question. This is for QnA dataset.",
+		},
+		{
+			role: "user",
+			content:
+				"Information of <b>Paris</b>:\n- Location: Paris, France.\n\nInformation of <b>Louvre Museum</b>:\n- Location: 75001 Paris, France.\n\nInformation of <b>Cathédrale Notre-Dame de Paris</b>:\n- Location: 6 Parvis Notre-Dame - Pl. Jean-Paul II, 75004 Paris, France.\n\nInformation of <b>Eiffel Tower</b>:\n- Location: Av. Gustave Eiffel, 75007 Paris, France.\n\nTravel time from <b>Cathédrale Notre-Dame de Paris</b> to <b>Eiffel Tower</b> is:\n- By cycle: 20 mins (5.4 km).\n\nTravel time from <b>Louvre Museum</b> to <b>Cathédrale Notre-Dame de Paris</b> is:\n- By cycle: 12 mins (2.2 km).",
+		},
+		{
+			role: "assistant",
+			content:
+				"I am planning a visit to Paris and want to maximize my time. If I spend 2 hours at the Louvre Museum in the morning, 1 hour at the Notre-Dame Cathedral around noon, and 1 hour at the Eiffel Tower in the afternoon, how much time should I allocate for travel between these places using public transport?",
+		},
+		{
+			role: "user",
+			content: "Good. Next Context is: " + req.body.context,
+		},
+	];
+
+	try {
+		const { choices } = await client.getChatCompletions(
+			"GPT-35-TURBO-0125",
+			req.body.context,
+			{
+				max_tokens: 4096,
+				temperature: 0,
+				top_p: 1,
+				frequency_penalty: 0,
+				presence_penalty: 0,
+				// stop: ["\n"],
+				messages: message_text,
+			}
+		);
+		console.log(choices[0].message["content"]);
+		return res.send(choices[0].message["content"]);
+	} catch (error) {
+		console.error("An error occurred:", error);
+		return res
+			.status(500)
+			.send({ success: false, error: "An error occurred" });
+	}
+};
+
 module.exports = {
 	generateContext,
 	translateContext,
 	askGPT,
 	askGPTLive,
+	generateQuestion,
 };
