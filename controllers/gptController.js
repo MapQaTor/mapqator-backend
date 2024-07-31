@@ -318,7 +318,6 @@ const extract = (s) => {
 };
 
 const askGPT = async (req, res) => {
-	console.log("Hit");
 	const result = await queryRepository.getQuery(req.params.id);
 	if (result.success) {
 		const { question, context_gpt, answer } = result.data[0];
@@ -384,7 +383,7 @@ const askGPT = async (req, res) => {
 
 const askGPTLive = async (req, res) => {
 	const { question, answer } = req.body.query;
-
+	console.log("Hit GPT", question, answer);
 	let options = ""; // Assuming prompt is initialized earlier in your code
 
 	for (let i = 0; i < answer.options.length; i++) {

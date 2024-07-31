@@ -17,6 +17,7 @@ router.get("/", async (req, res) => {
 router.use("/places", placeRoutes);
 router.use("/queries", queryRoutes);
 router.use("/gpt", gptRoutes);
+router.use("/gemini", require("./geminiRoutes"));
 router.use("/map", mapRoutes);
 router.use("/evaluation", require("./evaluationRoutes"));
 router.use("/auth", require("./authRoutes"));
