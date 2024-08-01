@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI("AIzaSyB3MhiTdLd7KFC08sR-EBNjWO1M8ZNeYj8");
 const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+// const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const askGeminiLive = async (req, res) => {
 	const { question, answer } = req.body.query;
