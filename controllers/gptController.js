@@ -393,6 +393,13 @@ const askGPTLive = async (req, res) => {
 		}
 		options += `Option${i + 1}: ${answer.options[i]}, `;
 	}
+
+	// https://platform.openai.com/docs/guides/prompt-engineering/strategy-provide-reference-text
+	// system: Use the provided articles delimited by triple quotes to answer questions. If the answer cannot be found in the articles, write "I could not find an answer."
+
+	// user: <insert articles, each delimited by triple quotes></insert>
+	// Question: <insert question here>
+
 	const message_text = [
 		{
 			role: "system",
