@@ -3,14 +3,15 @@ const mapRepository = require("../repositories/mapRepository");
 const placeRepository = require("../repositories/placeRepository");
 
 const getSingleDistance = async (key, origin, destination, mode) => {
-	const local = await mapRepository.getDistance(origin, destination, mode);
-	if (local.success && local.data.length > 0) {
-		return {
-			distance: local.data[0].distance,
-			duration: local.data[0].duration,
-			status: "LOCAL",
-		};
-	} else if (key) {
+	// const local = await mapRepository.getDistance(origin, destination, mode);
+	// if (local.success && local.data.length > 0) {
+	// 	return {
+	// 		distance: local.data[0].distance,
+	// 		duration: local.data[0].duration,
+	// 		status: "LOCAL",
+	// 	};
+	// } else
+	if (key) {
 		try {
 			console.log(origin, destination, mode);
 			const response = await axios.get(
@@ -135,12 +136,13 @@ const getDirections = async (req, res) => {
 	const destination = req.query.destination;
 	const mode = req.query.mode.toLowerCase();
 	const key = req.header("google_maps_api_key");
-	const local = await mapRepository.getDirections(origin, destination, mode);
-	if (local.success && local.data.length > 0) {
-		return res
-			.status(200)
-			.send({ routes: local.data[0].routes, status: "LOCAL" });
-	} else if (key) {
+	// const local = await mapRepository.getDirections(origin, destination, mode);
+	// if (local.success && local.data.length > 0) {
+	// 	return res
+	// 		.status(200)
+	// 		.send({ routes: local.data[0].routes, status: "LOCAL" });
+	// } else
+	if (key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/directions/json",
@@ -216,20 +218,21 @@ const searchNearby = async (req, res) => {
 	const keyword = req.query.keyword || "";
 	const rankby = req.query.rankby || "prominence";
 	const radius = req.query.radius || 1;
-	const local = await mapRepository.searchNearby(
-		location,
-		type,
-		keyword,
-		rankby,
-		radius
-	);
+	// const local = await mapRepository.searchNearby(
+	// 	location,
+	// 	type,
+	// 	keyword,
+	// 	rankby,
+	// 	radius
+	// );
 
-	const key = req.header("google_maps_api_key");
-	if (local.success && local.data.length > 0) {
-		return res
-			.status(200)
-			.send({ results: local.data[0].places, status: "LOCAL" });
-	} else if (key) {
+	// const key = req.header("google_maps_api_key");
+	// if (local.success && local.data.length > 0) {
+	// 	return res
+	// 		.status(200)
+	// 		.send({ results: local.data[0].places, status: "LOCAL" });
+	// } else
+	if (key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
@@ -327,14 +330,15 @@ const getLocalDetails = async (req, res) => {
 
 const getDetails = async (req, res) => {
 	const key = req.header("google_maps_api_key");
-	const local = await placeRepository.getPlace(req.params.id);
-	if (
-		local.success &&
-		local.data.length > 0 &&
-		(!key || local.data[0].last_updated)
-	) {
-		return res.status(200).send({ result: local.data[0], status: "LOCAL" });
-	} else if (key) {
+	// const local = await placeRepository.getPlace(req.params.id);
+	// if (
+	// 	local.success &&
+	// 	local.data.length > 0 &&
+	// 	(!key || local.data[0].last_updated)
+	// ) {
+	// 	return res.status(200).send({ result: local.data[0], status: "LOCAL" });
+	// } else
+	if (key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/place/details/json",
@@ -425,14 +429,15 @@ const searchInside = async (req, res) => {
 	const type = req.query.type;
 	// const name = req.query.name;
 	// console.log(type + " in " + name);
-	const local = await mapRepository.searchInside(location, type);
 	const key = req.header("google_maps_api_key");
 
-	if (local.success && local.data.length > 0) {
-		return res
-			.status(200)
-			.send({ results: local.data[0].places, status: "LOCAL" });
-	} else if (key) {
+	// const local = await mapRepository.searchInside(location, type);
+	// if (local.success && local.data.length > 0) {
+	// 	return res
+	// 		.status(200)
+	// 		.send({ results: local.data[0].places, status: "LOCAL" });
+	// } else
+	if (key) {
 		const place = await placeRepository.getPlace(location);
 		console.log(place);
 		try {
