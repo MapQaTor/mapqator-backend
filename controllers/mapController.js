@@ -218,6 +218,7 @@ const searchNearby = async (req, res) => {
 	const keyword = req.query.keyword || "";
 	const rankby = req.query.rankby || "prominence";
 	const radius = req.query.radius || 1;
+	const key = req.header("google_maps_api_key");
 	// const local = await mapRepository.searchNearby(
 	// 	location,
 	// 	type,
@@ -225,8 +226,6 @@ const searchNearby = async (req, res) => {
 	// 	rankby,
 	// 	radius
 	// );
-
-	// const key = req.header("google_maps_api_key");
 	// if (local.success && local.data.length > 0) {
 	// 	return res
 	// 		.status(200)
