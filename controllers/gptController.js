@@ -479,8 +479,8 @@ const generateQuestion = async (req, res) => {
 			}
 		);
 		console.log(choices[0].message["content"]);
-		// return res.send(choices[0].message["content"]);
-		return res.send("Time to go from Louvre to Eiffel Tower by car?");
+		return res.send(choices[0].message["content"]);
+		// return res.send("Time to go from Louvre to Eiffel Tower by car?");
 	} catch (error) {
 		console.error("An error occurred:", error);
 		return res
