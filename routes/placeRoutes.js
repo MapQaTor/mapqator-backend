@@ -5,6 +5,7 @@ const router = require("express").Router();
 
 // router.use(authenticateJWT);
 router.post("/", placeController.createPlace);
+router.post("/new", placeController.createPlaceNew);
 router.get("/:id", placeController.getPlace);
 router.get("/", placeController.getPlaces);
 router.put("/:id", placeController.updatePlace);

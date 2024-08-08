@@ -17,6 +17,20 @@ const createQuery = async (record, username) => {
 	return result;
 };
 
+const createNewQuery = async (record, username) => {
+	const query =
+		"INSERT INTO new_dataset (context, context_json, context_gpt, questions , username) VALUES ($1, $2, $3, $4, $5) RETURNING *";
+	const params = [
+		record.context,
+		record.context_json,
+		record.context_gpt,
+		record.questions,
+		username,
+	];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const updateCategory = async (id, category) => {
 	const query = `
 		UPDATE dataset
@@ -132,4 +146,5 @@ module.exports = {
 	deleteQuery,
 	getDataset,
 	annotate,
+	createNewQuery,
 };

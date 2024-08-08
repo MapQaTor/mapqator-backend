@@ -1,5 +1,5 @@
 const base = require("./base");
-
+const dataFields = require("../database/dataFields.json");
 const createPlace = async (place) => {
 	const query = `
 		INSERT INTO places (place_id, name, formatted_address, geometry, opening_hours, rating, reviews, price_level, types, user_ratings_total, delivery, dine_in, reservable, serves_beer, serves_breakfast, serves_brunch, serves_dinner, serves_lunch, serves_vegetarian_food, serves_wine, takeout, wheelchair_accessible_entrance, vicinity, last_updated) 
@@ -61,6 +61,24 @@ const createPlace = async (place) => {
 	return result;
 };
 
+const createPlaceNew = async (place) => {
+	const query = `
+		INSERT INTO new_places ("${dataFields
+			.map((field) => field)
+			.join('", "')}", "updatedAt") 
+		VALUES (${dataFields.map((f, i) => "$" + (i + 1))}, NOW()) 
+		ON CONFLICT (id) DO UPDATE SET 
+		${dataFields
+			.map((field, i) => `"${field}" = $${i + 1}`)
+			.join(", ")}, "updatedAt" = NOW()
+		RETURNING *
+	`;
+	const params = dataFields.map((field) => place[field] || null);
+	// console.log(query);
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getPlace = async (id) => {
 	const query = "SELECT * FROM places WHERE place_id = $1";
 	const params = [id];
@@ -109,6 +127,7 @@ const deletePlace = async (id) => {
 
 module.exports = {
 	createPlace,
+	createPlaceNew,
 	getPlace,
 	getPlaces,
 	updatePlace,

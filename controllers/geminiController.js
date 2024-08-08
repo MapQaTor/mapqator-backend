@@ -4,6 +4,7 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 // const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const askGeminiLive = async (req, res) => {
+	return res.send("Option 1");
 	const { question, answer } = req.body.query;
 	console.log("Hit Gemini", req.body.context, question, answer);
 	let options = ""; // Assuming prompt is initialized earlier in your code

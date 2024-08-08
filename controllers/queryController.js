@@ -21,6 +21,17 @@ const createQuery = async (req, res) => {
 	}
 };
 
+const createNewQuery = async (req, res) => {
+	const query = req.body;
+	const { username } = req.user;
+	const result = await queryRepository.createNewQuery(query, username);
+	if (result.success) {
+		res.status(201).send(result.data[0]);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
 const createQueryWithEvaluation = async (req, res) => {
 	const query = req.body;
 	const { username } = req.user;
@@ -270,4 +281,5 @@ module.exports = {
 	annotate,
 	createQueryWithEvaluation,
 	updateQueryWithEvaluation,
+	createNewQuery,
 };

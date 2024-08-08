@@ -383,6 +383,7 @@ const askGPT = async (req, res) => {
 };
 
 const askGPTLive = async (req, res) => {
+	return res.send("Option 3");
 	const { question, answer } = req.body.query;
 	console.log("Hit GPT", req.body.context, question, answer);
 	let options = ""; // Assuming prompt is initialized earlier in your code
