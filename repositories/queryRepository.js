@@ -19,8 +19,9 @@ const createQuery = async (record, username) => {
 
 const createNewQuery = async (record, username) => {
 	const query =
-		"INSERT INTO new_dataset (context, context_json, context_gpt, questions , username) VALUES ($1, $2, $3, $4, $5) RETURNING *";
+		"INSERT INTO new_dataset (name, context, context_json, context_gpt, questions , username) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *";
 	const params = [
+		record.name,
 		record.context,
 		record.context_json,
 		record.context_gpt,
@@ -81,6 +82,27 @@ const getQuery = async (id) => {
 	`;
 	const params = [id];
 	const result = await base.query(query, params);
+	return result;
+};
+
+const getNewQuery = async (id) => {
+	const query = `
+		SELECT *
+		FROM new_dataset
+		WHERE id = $1
+	`;
+	const params = [id];
+	const result = await base.query(query, params);
+	return result;
+};
+
+const getNewQueries = async () => {
+	const query = `
+		SELECT *
+		FROM new_dataset
+		ORDER BY id DESC
+	`;
+	const result = await base.query(query);
 	return result;
 };
 
@@ -147,4 +169,6 @@ module.exports = {
 	getDataset,
 	annotate,
 	createNewQuery,
+	getNewQueries,
+	getNewQuery,
 };

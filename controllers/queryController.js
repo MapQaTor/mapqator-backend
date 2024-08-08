@@ -26,7 +26,9 @@ const createNewQuery = async (req, res) => {
 	const { username } = req.user;
 	const result = await queryRepository.createNewQuery(query, username);
 	if (result.success) {
-		res.status(201).send(result.data[0]);
+		res.status(201).send(
+			(await queryRepository.getNewQuery(result.data[0].id)).data
+		);
 	} else {
 		res.status(400).send(result);
 	}
@@ -79,6 +81,15 @@ const getQuery = async (req, res) => {
 
 const getQueries = async (req, res) => {
 	const result = await queryRepository.getQueries();
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
+};
+
+const getNewQueries = async (req, res) => {
+	const result = await queryRepository.getNewQueries();
 	if (result.success) {
 		res.send(result.data);
 	} else {
@@ -273,6 +284,7 @@ module.exports = {
 	createQuery,
 	getQuery,
 	getQueries,
+	getNewQueries,
 	updateCategory,
 	updateQuery,
 	deleteQuery,

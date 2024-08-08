@@ -14,8 +14,10 @@ router.post(
 	authenticateJWT,
 	queryController.createQueryWithEvaluation
 );
+router.get("/new", queryController.getNewQueries);
 router.get("/:id", queryController.getQuery);
 router.get("/", queryController.getQueries);
+
 router.put("/:id", authenticateJWT, queryController.updateQuery);
 router.put(
 	"/:id/evaluate",
