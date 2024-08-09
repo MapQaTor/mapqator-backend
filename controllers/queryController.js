@@ -79,6 +79,19 @@ const getQuery = async (req, res) => {
 	}
 };
 
+const submitForEvaluation = async (req, res) => {
+	const id = parseInt(req.params.id);
+	const context = req.body.context;
+	const result = await queryRepository.submitForEvaluation(id, context);
+	if (result.success) {
+		res.status(201).send(
+			(await queryRepository.getNewQuery(result.data[0].id)).data
+		);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
 const getQueries = async (req, res) => {
 	const result = await queryRepository.getQueries();
 	if (result.success) {
@@ -317,4 +330,5 @@ module.exports = {
 	createNewQuery,
 	updateNewQuery,
 	deleteNewQuery,
+	submitForEvaluation,
 };
