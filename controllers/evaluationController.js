@@ -21,12 +21,12 @@ const insertResult = async (req, res) => {
 
 const insertNewResultByQuery = async (req, res) => {
 	try {
-		let { model_id, response } = req.body;
+		let { model_id, responses } = req.body;
 		const query_id = req.params.query_id;
 		const result = await evaluationRepository.insertNewResultByQuery(
 			query_id,
 			model_id,
-			response
+			responses
 		);
 		if (result.success) {
 			res.status(200).json({

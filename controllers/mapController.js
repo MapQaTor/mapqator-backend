@@ -208,7 +208,7 @@ const computeRoutes = async (req, res) => {
 						"Content-Type": "application/json",
 						"X-Goog-Api-Key": key,
 						"X-Goog-FieldMask":
-							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction",
+							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues",
 					},
 				}
 			);

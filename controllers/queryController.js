@@ -119,6 +119,17 @@ const updateQuery = async (req, res) => {
 	}
 };
 
+const updateNewQuery = async (req, res) => {
+	const id = parseInt(req.params.id);
+	const query = req.body;
+	const result = await queryRepository.updateNewQuery(id, query);
+	if (result.success) {
+		res.send((await queryRepository.getNewQuery(id)).data);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
 const updateQueryWithEvaluation = async (req, res) => {
 	const id = parseInt(req.params.id);
 	const query = req.body;
@@ -294,4 +305,5 @@ module.exports = {
 	createQueryWithEvaluation,
 	updateQueryWithEvaluation,
 	createNewQuery,
+	updateNewQuery,
 };

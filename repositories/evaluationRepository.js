@@ -31,15 +31,15 @@ const insertResultByQuery = async (query_id, model_id, answer, verdict) => {
 	return result;
 };
 
-const insertNewResultByQuery = async (query_id, model_id, response) => {
+const insertNewResultByQuery = async (query_id, model_id, responses) => {
 	const query = `
-		INSERT INTO new_evaluations (query_id, model_id, response)
+		INSERT INTO new_evaluations (query_id, model_id, responses)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (query_id, model_id) DO UPDATE SET
-		response = $3
+		responses = $3
 		RETURNING *
 	`;
-	const params = [query_id, model_id, response];
+	const params = [query_id, model_id, responses];
 	const result = await base.query(query, params);
 	return result;
 };
