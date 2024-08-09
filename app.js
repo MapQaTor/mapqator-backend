@@ -28,7 +28,7 @@ cron.schedule("*/14 * * * *", () => {
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-
+app.use(express.bodyParser({ limit: "50mb" }));
 // Use cookie-parser middleware
 
 app.use("/api", appRoutes);
