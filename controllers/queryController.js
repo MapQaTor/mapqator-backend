@@ -168,6 +168,16 @@ const deleteQuery = async (req, res) => {
 	}
 };
 
+const deleteNewQuery = async (req, res) => {
+	const id = parseInt(req.params.id);
+	const result = await queryRepository.deleteNewQuery(id);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(400).send(result);
+	}
+};
+
 const getGPTContext = async (req, res) => {
 	// console.log(req.body);
 	const message_text = [
@@ -306,4 +316,5 @@ module.exports = {
 	updateQueryWithEvaluation,
 	createNewQuery,
 	updateNewQuery,
+	deleteNewQuery,
 };

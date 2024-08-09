@@ -27,5 +27,6 @@ router.put(
 );
 router.put("/:id/category", authenticateJWT, queryController.updateCategory);
 router.delete("/:id", authenticateJWT, queryController.deleteQuery);
+router.delete("/new/:id", authenticateJWT, queryController.deleteNewQuery);
 
 module.exports = router;

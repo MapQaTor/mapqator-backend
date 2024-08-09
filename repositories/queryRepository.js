@@ -152,6 +152,13 @@ const deleteQuery = async (id) => {
 	return result;
 };
 
+const deleteNewQuery = async (id) => {
+	const query = "DELETE FROM new_dataset WHERE id = $1";
+	const params = [id];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getDataset = async () => {
 	const query = `
         SELECT *
@@ -192,4 +199,5 @@ module.exports = {
 	getNewQueries,
 	getNewQuery,
 	updateNewQuery,
+	deleteNewQuery,
 };

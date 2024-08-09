@@ -74,7 +74,7 @@ const getLocalDistance = async (req, res) => {
 	}
 };
 
-// https://developers.google.com/maps/documentation/routes/reference/rest/v2/TopLevel/computeRoutes#Route
+// https://developers.google.com/maps/documentation/routes/reference/rest/v2/TopLevel/computeRoutes#Route 
 
 const getDistance = async (req, res) => {
 	console.log(
