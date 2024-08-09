@@ -120,7 +120,7 @@ const getNewQueries = async () => {
 	const query = `
 		SELECT DS.*, COALESCE(json_agg(json_build_object('responses', E.responses, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation
 		FROM new_dataset DS
-		LEFT JOIN evaluations E
+		LEFT JOIN new_evaluations E
 		ON DS.id = E.query_id
 		LEFT JOIN models M
 		ON E.model_id = M.id
