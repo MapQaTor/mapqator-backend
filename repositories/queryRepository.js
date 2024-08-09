@@ -67,6 +67,26 @@ const updateQuery = async (id, record) => {
 	return result;
 };
 
+const updateNewQuery = async (id, record) => {
+	await evaluationRepository.deleteNewEvaluationByQuery(id);
+	const query = `
+		UPDATE new_dataset
+		SET name = $1, context = $2, context_json = $3, context_gpt = $4, questions = $5
+		WHERE id = $6
+		RETURNING *
+	`;
+	const params = [
+		record.name,
+		record.context,
+		record.context_json,
+		record.context_gpt,
+		record.questions,
+		id,
+	];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getQuery = async (id) => {
 	const query = `
 		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation, json_build_object('answer', H.answer, 'explanation', H.explanation, 'username', H.username) as human
@@ -171,4 +191,5 @@ module.exports = {
 	createNewQuery,
 	getNewQueries,
 	getNewQuery,
+	updateNewQuery,
 };

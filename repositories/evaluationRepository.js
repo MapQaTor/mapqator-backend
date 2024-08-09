@@ -31,6 +31,19 @@ const insertResultByQuery = async (query_id, model_id, answer, verdict) => {
 	return result;
 };
 
+const insertNewResultByQuery = async (query_id, model_id, response) => {
+	const query = `
+		INSERT INTO new_evaluations (query_id, model_id, response)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (query_id, model_id) DO UPDATE SET
+		response = $3
+		RETURNING *
+	`;
+	const params = [query_id, model_id, response];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getAllResults = async () => {
 	const query = `
 		SELECT *
@@ -67,11 +80,24 @@ const deleteEvaluationByQuery = async (query_id) => {
 	return result;
 };
 
+const deleteNewEvaluationByQuery = async (query_id) => {
+	console.log("Deleting evaluations for query_id: " + query_id);
+	const query = `
+		DELETE FROM new_evaluations
+		WHERE query_id = $1 AND model_id != 0
+	`;
+	const params = [query_id];
+	const result = await base.query(query, params);
+	return result;
+};
+
 module.exports = {
 	insertResult,
 	getAllResults,
 	getResultsByQuery,
 	getResultsByModel,
 	deleteEvaluationByQuery,
+	deleteNewEvaluationByQuery,
 	insertResultByQuery,
+	insertNewResultByQuery,
 };
