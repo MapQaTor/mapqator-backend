@@ -4,6 +4,7 @@ const path = require("path");
 const cors = require("cors");
 const cron = require("node-cron");
 const https = require("https");
+const bodyParser = require("body-parser");
 // const fileUpload = require("express-fileupload");
 const appRoutes = require("./routes/appRoutes");
 
@@ -28,7 +29,8 @@ cron.schedule("*/14 * * * *", () => {
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-app.use(express.bodyParser({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: false }));
+app.use(bodyParser.json({ limit: "50mb" }));
 // Use cookie-parser middleware
 
 app.use("/api", appRoutes);
