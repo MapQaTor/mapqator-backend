@@ -284,6 +284,7 @@ const addNearbyNew = async (
 	const placeQuery = `
         INSERT INTO new_nearby_places (nearby_id, place_id)
         VALUES ($1, $2)
+		ON CONFLICT ("nearby_id", "place_id") DO NOTHING
     `;
 	for (const place of places) {
 		const placeParams = [nearbyId, place.id];
