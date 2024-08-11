@@ -228,30 +228,30 @@ const computeRoutes = async (req, res) => {
 // https://developers.google.com/maps/documentation/routes/reference/rest/v2/TopLevel/computeRouteMatrix
 const computeRouteMatrix = async (req, res) => {
 	const key = req.header("google_maps_api_key");
-	console.log({
-		origins: req.body.origins.map((origin) => ({
-			waypoint: {
-				placeId: origin,
-			},
-		})),
-		destinations: req.body.destinations.map((destination) => ({
-			waypoint: {
-				placeId: destination,
-			},
-		})),
-		travelMode: req.body.travelMode,
-		routingPreference: "TRAFFIC_UNAWARE",
-		units: "METRIC",
-		transitPreferences: {},
-		languageCode: "en",
-	});
-	console.log(
-		req.body.origins.map((origin) => ({
-			waypoint: {
-				placeId: origin,
-			},
-		}))
-	);
+	// console.log({
+	// 	origins: req.body.origins.map((origin) => ({
+	// 		waypoint: {
+	// 			placeId: origin,
+	// 		},
+	// 	})),
+	// 	destinations: req.body.destinations.map((destination) => ({
+	// 		waypoint: {
+	// 			placeId: destination,
+	// 		},
+	// 	})),
+	// 	travelMode: req.body.travelMode,
+	// 	routingPreference: "TRAFFIC_UNAWARE",
+	// 	units: "METRIC",
+	// 	transitPreferences: {},
+	// 	languageCode: "en",
+	// });
+	// console.log(
+	// 	req.body.origins.map((origin) => ({
+	// 		waypoint: {
+	// 			placeId: origin,
+	// 		},
+	// 	}))
+	// );
 	if (key) {
 		try {
 			const response = await axios.post(
@@ -287,8 +287,42 @@ const computeRouteMatrix = async (req, res) => {
 					},
 				}
 			);
-			console.log(response);
 			res.status(200).send(response.data);
+
+			for (const route of response.data) {
+				const {
+					originIndex,
+					destinationIndex,
+					condition,
+					localizedValues,
+				} = route;
+
+				const o = req.body.origins[originIndex];
+				const d = req.body.destinations[destinationIndex];
+				if (o === d) {
+					continue;
+				}
+
+				if (condition === "ROUTE_NOT_FOUND") {
+					mapRepository.addNewDistance(
+						o,
+						d,
+						req.body.travelMode,
+						null,
+						null
+					);
+				} else {
+					const distance = localizedValues.distance.text;
+					const duration = localizedValues.staticDuration.text;
+					mapRepository.addNewDistance(
+						o,
+						d,
+						req.body.travelMode,
+						distance,
+						duration
+					);
+				}
+			}
 		} catch (error) {
 			res.status(400).send({ error: "An error occurred" });
 			console.error(error);

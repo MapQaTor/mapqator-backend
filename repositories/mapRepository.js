@@ -63,6 +63,23 @@ const addDistance = async (origin, destination, mode, distance, duration) => {
 	return result;
 };
 
+const addNewDistance = async (
+	origin,
+	destination,
+	mode,
+	distance,
+	duration
+) => {
+	const query = `
+		INSERT INTO new_distance ("origin", "destination", "travelMode", "distance", "duration")
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING *
+	`;
+	const params = [origin, destination, mode, distance, duration];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getDirections = async (origin, destination, mode) => {
 	const query = `
         SELECT *
@@ -309,4 +326,5 @@ module.exports = {
 	getDirectionsByNames,
 	searchText,
 	addNearbyNew,
+	addNewDistance,
 };
