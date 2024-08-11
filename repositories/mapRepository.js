@@ -102,6 +102,36 @@ const addDirections = async (origin, destination, mode, directions) => {
 	return result;
 };
 
+const addNewDirections = async (
+	origin,
+	destination,
+	intermediates,
+	travelMode,
+	routeModifiers,
+	optimizeWaypointOrder,
+	transitPreferences,
+	routes
+) => {
+	const query = `
+		INSERT INTO new_directions ("origin", "destination", "intermediates", "travelMode", "routeModifiers", "optimizeWaypointOrder", "transitPreferences", "routes")
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		RETURNING *
+	`;
+	const params = [
+		origin,
+		destination,
+		intermediates,
+		travelMode,
+		routeModifiers,
+		optimizeWaypointOrder,
+		transitPreferences,
+		routes,
+	];
+	const result = await base.query(query, params);
+
+	return result;
+};
+
 const searchNearby = async (location, type, keyword, rankby, radius) => {
 	const query = `
         SELECT N.location, N.type, N.keyword, N.rankby, N.radius, json_agg(json_build_object(
@@ -327,4 +357,5 @@ module.exports = {
 	searchText,
 	addNearbyNew,
 	addNewDistance,
+	addNewDirections,
 };

@@ -212,8 +212,29 @@ const computeRoutes = async (req, res) => {
 					},
 				}
 			);
-			console.log(response.data);
 			res.status(200).send(response.data);
+
+			const all_routes = [];
+			response.data.routes.forEach((route) => {
+				all_routes.push({
+					label: route.description,
+					duration: route.localizedValues.staticDuration.text,
+					distance: route.localizedValues.distance.text,
+					legs: route.legs,
+					optimizedIntermediateWaypointIndex:
+						route.optimizedIntermediateWaypointIndex,
+				});
+			});
+			mapRepository.addNewDirections(
+				req.body.origin,
+				req.body.destination,
+				req.body.intermediates,
+				req.body.travelMode,
+				req.body.routeModifiers,
+				req.body.optimizeWaypointOrder,
+				req.body.transitPreferences,
+				all_routes
+			);
 		} catch (error) {
 			res.status(400).send({ error: "An error occurred" });
 			console.error(error.message);
