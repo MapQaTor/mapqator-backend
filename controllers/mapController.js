@@ -144,7 +144,37 @@ const getLocalDirections = async (req, res) => {
 const computeRoutes = async (req, res) => {
 	const key = req.header("google_maps_api_key");
 
-	if (key) {
+	const local = await mapRepository.getNewDirections(
+		req.body.origin,
+		req.body.destination,
+		req.body.intermediates,
+		req.body.travelMode,
+		req.body.routeModifiers,
+		req.body.optimizeWaypointOrder,
+		req.body.transitPreferences
+	);
+	if (local.success && local.data.length > 0) {
+		console.log(local.data[0].routes);
+		const all_routes = [];
+		local.data[0].routes.forEach((route) => {
+			all_routes.push({
+				description: route.label,
+				localizedValues: {
+					staticDuration: {
+						text: route.duration,
+					},
+					distance: {
+						text: route.distance,
+					},
+				},
+				legs: route.legs,
+				optimizedIntermediateWaypointIndex:
+					route.optimizedIntermediateWaypointIndex,
+			});
+		});
+		return res.status(200).send({ routes: all_routes, status: "LOCAL" });
+	} // if (local.success && local.data.length > 0) {
+	else if (key) {
 		try {
 			const response = await axios.post(
 				"https://routes.googleapis.com/directions/v2:computeRoutes",
@@ -189,9 +219,10 @@ const computeRoutes = async (req, res) => {
 						req.body.travelMode !== "TRANSIT"
 							? req.body.optimizeWaypointOrder
 							: false,
-					// extraComputations: [
-					// 	"HTML_FORMATTED_NAVIGATION_INSTRUCTIONS",
-					// ],
+					extraComputations:
+						req.body.travelMode === "TRANSIT"
+							? []
+							: ["HTML_FORMATTED_NAVIGATION_INSTRUCTIONS"],
 					units: "METRIC",
 					languageCode: "en",
 					routingPreference:

@@ -73,6 +73,7 @@ const addNewDistance = async (
 	const query = `
 		INSERT INTO new_distance ("origin", "destination", "travelMode", "distance", "duration")
 		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT ("origin", "destination", "travelMode") DO NOTHING
 		RETURNING *
 	`;
 	const params = [origin, destination, mode, distance, duration];
@@ -87,6 +88,33 @@ const getDirections = async (origin, destination, mode) => {
         WHERE from_id = $1 AND to_id = $2 AND mode = $3
     `;
 	const params = [origin, destination, mode];
+	const result = await base.query(query, params);
+	return result;
+};
+
+const getNewDirections = async (
+	origin,
+	destination,
+	intermediates,
+	travelMode,
+	routeModifiers,
+	optimizeWaypointOrder,
+	transitPreferences
+) => {
+	const query = `
+		SELECT routes
+		FROM new_directions
+		WHERE "origin" = $1 AND "destination" = $2 AND "intermediates" = $3 AND "travelMode" = $4 AND "routeModifiers" = $5 AND "optimizeWaypointOrder" = $6 AND "transitPreferences" = $7
+	`;
+	const params = [
+		origin,
+		destination,
+		intermediates,
+		travelMode,
+		routeModifiers,
+		optimizeWaypointOrder,
+		transitPreferences,
+	];
 	const result = await base.query(query, params);
 	return result;
 };
@@ -358,4 +386,5 @@ module.exports = {
 	addNearbyNew,
 	addNewDistance,
 	addNewDirections,
+	getNewDirections,
 };
