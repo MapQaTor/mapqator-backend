@@ -366,10 +366,13 @@ const searchNearbyNew = async (req, res) => {
 			// type, minRating, priceLevels, rankPreference, locationBias
 			"https://places.googleapis.com/v1/places:searchText",
 			{
-				textQuery: req.body.type || req.body.keyword,
-				rankPreference:
-					req.body.rankPreference || "RANK_PREFERENCE_UNSPECIFIED", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
-				includedType: req.body.type, // One type only
+				textQuery:
+					req.body.searchBy === "type"
+						? req.body.type
+						: req.body.keyword,
+				rankPreference: req.body.rankPreference || "RELEVANCE", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
+				includedType:
+					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
 				minRating: req.body.minRating,
 				priceLevels: req.body.priceLevels,
 				maxResultCount: req.body.maxResultCount || 10,
@@ -400,7 +403,7 @@ const searchNearbyNew = async (req, res) => {
 		const places = JSON.parse(JSON.stringify(response.data.places));
 		mapRepository.addNearbyNew(
 			req.body.locationBias,
-			req.body.type,
+			req.body.searchBy === "type" ? req.body.type : req.body.keyword,
 			req.body.minRating,
 			req.body.priceLevels,
 			req.body.rankPreference,
@@ -514,18 +517,22 @@ const searchLocalNearby = async (req, res) => {
 const getDetailsNew = async (req, res) => {
 	const key = req.header("google_maps_api_key");
 	try {
+		console.log("Fetch:", req.params.id);
 		const response = await axios.get(
 			"https://places.googleapis.com/v1/places/" + req.params.id,
 			{
 				headers: {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
+					// "X-Goog-FieldMask":
+					// 	"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary,reviews",
 					"X-Goog-FieldMask":
-						"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary",
+						"id,name,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary",
 				},
 			}
 		);
 		const details = JSON.parse(JSON.stringify(response.data));
+		console.log(details);
 		const result = await placeRepository.createPlaceNew(details);
 		res.status(200).send(result.data[0]);
 	} catch (error) {
