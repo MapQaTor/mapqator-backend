@@ -301,6 +301,15 @@ const getDataset = async (req, res) => {
 	}
 };
 
+const getNewDataset = async (req, res) => {
+	const result = await queryRepository.getNewDataset();
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
+};
+
 const annotate = async (req, res) => {
 	const human = req.body;
 	const { username } = req.user;
@@ -324,6 +333,7 @@ module.exports = {
 	deleteQuery,
 	getGPTContext,
 	getDataset,
+	getNewDataset,
 	annotate,
 	createQueryWithEvaluation,
 	updateQueryWithEvaluation,

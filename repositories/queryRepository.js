@@ -192,6 +192,16 @@ const getDataset = async () => {
 	return result;
 };
 
+const getNewDataset = async () => {
+	const query = `
+        SELECT *
+        FROM new_dataset
+        WHERE id NOT IN (SELECT query_id FROM new_evaluations)
+    `;
+	const result = await base.query(query);
+	return result;
+};
+
 const annotate = async (query_id, human, username) => {
 	const query = `
 		INSERT INTO human (query_id, answer, explanation, username)
@@ -224,4 +234,5 @@ module.exports = {
 	updateNewQuery,
 	deleteNewQuery,
 	submitForEvaluation,
+	getNewDataset,
 };

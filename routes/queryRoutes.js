@@ -4,6 +4,7 @@ const { authenticateJWT } = require("../middlewares/authMiddleware");
 const router = require("express").Router();
 
 router.get("/dataset", queryController.getDataset);
+router.get("/dataset/new", queryController.getNewDataset);
 
 router.post("/annotate/:id", authenticateJWT, queryController.annotate);
 router.post("/gpt/context", authenticateJWT, queryController.getGPTContext);
