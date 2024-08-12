@@ -63,16 +63,21 @@ const createPlace = async (place) => {
 
 const createPlaceNew = async (place) => {
 	const query = `
-		INSERT INTO new_places ("${dataFields
+        INSERT INTO new_places ("${dataFields
 			.map((field) => field)
 			.join('", "')}", "updatedAt") 
-		VALUES (${dataFields.map((f, i) => "$" + (i + 1))}, NOW()) 
-		ON CONFLICT (id) DO UPDATE SET 
-		${dataFields
-			.map((field, i) => `"${field}" = $${i + 1}`)
+        VALUES (${dataFields.map((f, i) => "$" + (i + 1))}, NOW()) 
+        ON CONFLICT (id) DO UPDATE SET 
+        ${dataFields
+			.map((field, i) =>
+				place[field] !== null
+					? `"${field}" = EXCLUDED."${field}"`
+					: null
+			)
+			.filter(Boolean)
 			.join(", ")}, "updatedAt" = NOW()
-		RETURNING *
-	`;
+        RETURNING *
+    `;
 	const params = dataFields.map((field) => place[field] || null);
 	// console.log(query);
 	const result = await base.query(query, params);
