@@ -1,6 +1,14 @@
 const axios = require("axios");
 const mapRepository = require("../repositories/mapRepository");
 const placeRepository = require("../repositories/placeRepository");
+// const geometry = require("spherical-geometry-js");
+let geometry;
+(async () => {
+	geometry = await import("spherical-geometry-js");
+	// Any code that depends on `geometry` should be placed here or in an async function
+	// Example:
+	// geometry.someFunction();
+})();
 
 const getSingleDistance = async (key, origin, destination, mode) => {
 	// const local = await mapRepository.getDistance(origin, destination, mode);
@@ -478,7 +486,7 @@ const searchNearbyNew = async (req, res) => {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
 					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount",
+						"places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location",
 				},
 			}
 		);
@@ -487,6 +495,22 @@ const searchNearbyNew = async (req, res) => {
 		console.log(response.data);
 		res.status(200).send(response.data);
 		const places = JSON.parse(JSON.stringify(response.data.places));
+
+		for (const place of places) {
+			console.log(
+				place.displayName.text,
+				geometry.computeDistanceBetween(
+					{
+						lat: req.body.lat,
+						lng: req.body.lng,
+					},
+					{
+						lat: place.location.latitude,
+						lng: place.location.longitude,
+					}
+				)
+			);
+		}
 		mapRepository.addNearbyNew(
 			req.body.locationBias,
 			req.body.searchBy === "type" ? req.body.type : req.body.keyword,
