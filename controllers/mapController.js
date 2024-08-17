@@ -348,7 +348,6 @@ const computeRouteMatrix = async (req, res) => {
 				}
 			);
 			console.log(response.data);
-			res.status(200).send(response.data);
 
 			for (const route of response.data) {
 				const {
@@ -372,7 +371,7 @@ const computeRouteMatrix = async (req, res) => {
 						null,
 						null
 					);
-				} else {
+				} else if (condition === "ROUTE_EXISTS") {
 					const distance = localizedValues.distance.text;
 					const duration = localizedValues.staticDuration.text;
 					mapRepository.addNewDistance(
@@ -384,9 +383,11 @@ const computeRouteMatrix = async (req, res) => {
 					);
 				}
 			}
+
+			res.status(200).send(response.data);
 		} catch (error) {
-			res.status(400).send({ error: "An error occurred" });
 			console.error(error);
+			res.status(400).send({ error: "An error occurred" });
 		}
 	} else {
 		res.status(400).send({
