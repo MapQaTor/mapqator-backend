@@ -347,6 +347,7 @@ const computeRouteMatrix = async (req, res) => {
 					},
 				}
 			);
+			console.log(response.data);
 			res.status(200).send(response.data);
 
 			for (const route of response.data) {
@@ -469,7 +470,7 @@ const searchNearbyNew = async (req, res) => {
 					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
 				minRating: req.body.minRating,
 				priceLevels: req.body.priceLevels,
-				maxResultCount: req.body.maxResultCount || 10,
+				maxResultCount: req.body.maxResultCount || 5,
 				strictTypeFiltering: true,
 				locationBias: {
 					circle: {
@@ -480,6 +481,7 @@ const searchNearbyNew = async (req, res) => {
 						radius: 0,
 					},
 				},
+				languageCode: "en",
 			},
 			{
 				headers: {
@@ -637,7 +639,7 @@ const getDetailsNew = async (req, res) => {
 					// "X-Goog-FieldMask":
 					// 	"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary,reviews",
 					"X-Goog-FieldMask":
-						"id,name,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary",
+						"id,location,plusCode,shortFormattedAddress,accessibilityOptions,businessStatus,displayName,googleMapsUri,primaryType,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout",
 				},
 			}
 		);
@@ -712,7 +714,7 @@ const searchTextNew = async (req, res) => {
 				textQuery: req.body.query,
 				// rankPreference: req.query.rankby , // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
 				// For a categorical query such as "Restaurants in New York City", RELEVANCE is the default. For non-categorical queries such as "Mountain View, CA" we recommend that you leave rankPreference unset.
-				maxResultCount: req.body.maxResultCount || 10,
+				maxResultCount: req.body.maxResultCount || 5,
 			},
 			{
 				headers: {
