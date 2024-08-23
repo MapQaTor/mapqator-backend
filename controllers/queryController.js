@@ -271,7 +271,7 @@ Within a 1000-meter radius of BUET, there are also several cafes such as BUET St
 
 	try {
 		const { choices } = await client.getChatCompletions(
-			"GPT-35-TURBO-0125",
+			process.env.AZURE_OPENAI_MODEL,
 			message_text,
 			{
 				max_tokens: 4096,
