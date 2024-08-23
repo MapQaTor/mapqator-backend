@@ -78,7 +78,6 @@ const translateContext = async (req, res) => {
 
 	try {
 		const { choices } = await client.getChatCompletions(
-			// "GPT-35-TURBO-0125",
 			process.env.AZURE_OPENAI_MODEL,
 			message_text,
 			{
@@ -465,18 +464,19 @@ const generateQuestion = async (req, res) => {
 		},
 	];
 
+	console.log(process.env.AZURE_OPENAI_MODEL);
+	console.log(process.env.AZURE_OPENAI_KEY);
+	console.log(process.env.AZURE_OPENAI_ENDPOINT);
 	try {
 		const { choices } = await client.getChatCompletions(
 			process.env.AZURE_OPENAI_MODEL,
-			req.body.context,
+			message_text,
 			{
 				max_tokens: 4096,
 				temperature: 0,
 				top_p: 1,
 				frequency_penalty: 0,
 				presence_penalty: 0,
-				// stop: ["\n"],
-				messages: message_text,
 			}
 		);
 		console.log(choices[0].message["content"]);
