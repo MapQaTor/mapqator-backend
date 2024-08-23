@@ -2,7 +2,7 @@ const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 const queryRepository = require("../repositories/queryRepository");
 
 const client = new OpenAIClient(
-	"https://qcri-llm-rag-5.openai.azure.com/",
+	process.env.AZURE_OPENAI_ENDPOINT,
 	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
 );
 
@@ -79,7 +79,7 @@ const translateContext = async (req, res) => {
 	try {
 		const { choices } = await client.getChatCompletions(
 			// "GPT-35-TURBO-0125",
-			"GPT-4o",
+			process.env.AZURE_OPENAI_MODEL,
 			message_text,
 			{
 				max_tokens: 4096,
@@ -180,7 +180,7 @@ Within a 1000-meter radius of BUET, there are also several cafes such as BUET St
 
 	try {
 		const { choices } = await client.getChatCompletions(
-			"GPT-35-TURBO-0125",
+			process.env.AZURE_OPENAI_MODEL,
 			message_text,
 			{
 				max_tokens: 800,
@@ -262,7 +262,7 @@ const askGPTWithoutContext = async (req, res) => {
 		console.log(`Question:\n${question} Options:\n${options}`);
 		try {
 			const { choices } = await client.getChatCompletions(
-				"GPT-35-TURBO-0125",
+				process.env.AZURE_OPENAI_MODEL,
 				question,
 				{
 					max_tokens: 4096,
@@ -350,7 +350,7 @@ const askGPT = async (req, res) => {
 		);
 		try {
 			const { choices } = await client.getChatCompletions(
-				"GPT-35-TURBO-0125",
+				process.env.AZURE_OPENAI_MODEL,
 				question,
 				{
 					max_tokens: 4096,
@@ -415,7 +415,7 @@ const askGPTLive = async (req, res) => {
 
 	try {
 		const { choices } = await client.getChatCompletions(
-			"GPT-35-TURBO-0125",
+			process.env.AZURE_OPENAI_MODEL,
 			req.body.query,
 			{
 				max_tokens: 4096,
@@ -467,7 +467,7 @@ const generateQuestion = async (req, res) => {
 
 	try {
 		const { choices } = await client.getChatCompletions(
-			"GPT-35-TURBO-0125",
+			process.env.AZURE_OPENAI_MODEL,
 			req.body.context,
 			{
 				max_tokens: 4096,
