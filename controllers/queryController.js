@@ -4,7 +4,7 @@ const base = require("../repositories/base");
 const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
 const client = new OpenAIClient(
-	"https://qcri-llm-rag-5.openai.azure.com/",
+	process.env.AZURE_OPENAI_ENDPOINT,
 	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
 );
 
