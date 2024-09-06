@@ -54,7 +54,7 @@ const createPlace = async (place) => {
 		place.serves_wine || null,
 		place.takeout || null,
 		place.wheelchair_accessible_entrance || null,
-		place.international_phone_number || null,
+		place.formatted_phone_number || null,
 		place.vicinity || null,
 	];
 
