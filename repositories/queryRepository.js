@@ -183,12 +183,7 @@ const deleteNewQuery = async (id) => {
 };
 
 const getDataset = async () => {
-	const query = `
-        SELECT *
-        FROM dataset
-    `;
-	const result = await base.query(query);
-	return result;
+	return await getQueries();
 };
 
 const getNewDataset = async () => {
