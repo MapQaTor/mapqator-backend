@@ -330,6 +330,15 @@ const annotate = async (req, res) => {
 	}
 };
 
+const getModels = async (req, res) => {
+	const result = await queryRepository.getModels();
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
+};
+
 module.exports = {
 	createQuery,
 	getQuery,
@@ -348,4 +357,5 @@ module.exports = {
 	updateNewQuery,
 	deleteNewQuery,
 	submitForEvaluation,
+	getModels,
 };

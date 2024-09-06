@@ -186,6 +186,16 @@ const getDataset = async () => {
 	return await getQueries();
 };
 
+const getModels = async () => {
+	const query = `
+		SELECT *
+		FROM models
+	`;
+	const params = [];
+	const result = await base.query(query, params);
+	return result;
+};
+
 const getNewDataset = async () => {
 	const query = `
         SELECT *
@@ -214,6 +224,7 @@ const annotate = async (query_id, human, username) => {
 };
 
 module.exports = {
+	getModels,
 	createQuery,
 	getQuery,
 	getQueries,

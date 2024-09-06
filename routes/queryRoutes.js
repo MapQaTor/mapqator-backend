@@ -3,6 +3,7 @@ const { authenticateJWT } = require("../middlewares/authMiddleware");
 
 const router = require("express").Router();
 
+router.get("/models", queryController.getModels);
 router.get("/dataset", queryController.getDataset);
 router.get("/dataset/new", queryController.getNewDataset);
 
@@ -35,4 +36,5 @@ router.post(
 	authenticateJWT,
 	queryController.submitForEvaluation
 );
+
 module.exports = router;
