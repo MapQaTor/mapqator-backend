@@ -17,7 +17,7 @@ router.post(
 );
 router.get("/new", queryController.getNewQueries);
 router.get("/:id", queryController.getQuery);
-router.get("/", queryController.getQueries);
+router.get("/", authenticateJWT, queryController.getQueries);
 
 router.put("/:id", authenticateJWT, queryController.updateQuery);
 router.put("/new/:id", authenticateJWT, queryController.updateNewQuery);

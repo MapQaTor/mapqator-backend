@@ -96,6 +96,10 @@ const submitForEvaluation = async (req, res) => {
 };
 
 const getQueries = async (req, res) => {
+	const { username } = req.user;
+	if (username === "tanvirparvez") {
+		return res.status(401).send("Error: Unauthorized");
+	}
 	const result = await queryRepository.getQueries();
 	if (result.success) {
 		res.send(result.data);
