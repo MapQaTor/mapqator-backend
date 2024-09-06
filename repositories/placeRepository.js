@@ -54,8 +54,8 @@ const createPlace = async (place) => {
 		place.serves_wine || null,
 		place.takeout || null,
 		place.wheelchair_accessible_entrance || null,
-		place.formatted_phone_number || null,
 		place.vicinity || null,
+		place.formatted_phone_number || null,
 	];
 
 	const result = await base.query(query, params);
