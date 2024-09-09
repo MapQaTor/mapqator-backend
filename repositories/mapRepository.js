@@ -162,16 +162,20 @@ const addNewDirections = async (
 
 const searchNearby = async (location, type, rankby, radius) => {
 	const query = `
-        SELECT N.location, N.type, N.keyword, N.rankby, N.radius, json_agg(json_build_object(
+        SELECT N.location, N.type, N.rankby, N.radius, json_agg(json_build_object(
             'place_id', P.place_id,
             'name', P.name,
-            'vicinity', P.formatted_address
+            'vicinity', P.formatted_address,
+			'rating', P.rating,
+			'price_level', P.price_level,
+			'opening_hours', P.opening_hours,
+			'user_ratings_total', P.user_ratings_total
         )) AS places
         FROM nearby N
         JOIN nearby_places NP ON NP.nearby_id = N.id
         JOIN places P ON P.place_id = NP.place_id
         WHERE location = $1 AND type = $2 AND rankby = $3 AND radius = $4
-        GROUP BY N.id, N.location, N.type, N.keyword, N.rankby, N.radius
+        GROUP BY N.id, N.location, N.type, N.rankby, N.radius
     `;
 	const params = [location, type, rankby, radius];
 	const result = await base.query(query, params);

@@ -686,7 +686,13 @@ const searchNearbyTool = async (req, res) => {
 	if (place === null) {
 		return res.status(400).send({ error: "Invalid location" });
 	}
-
+	const priceMap = [
+		"Free",
+		"Inexpensive",
+		"Moderate",
+		"Expensive",
+		"Very Expensive",
+	];
 	const loc = place.geometry.location;
 	const lat = typeof loc.lat === "function" ? loc.lat() : loc.lat;
 	const lng = typeof loc.lng === "function" ? loc.lng() : loc.lng;
@@ -696,10 +702,24 @@ const searchNearbyTool = async (req, res) => {
 		rankby,
 		radius
 	);
+	console.log(location, type || keyword, rankby, radius);
 	if (local.success && local.data.length > 0) {
-		return res
-			.status(200)
-			.send({ results: local.data[0].places, status: "LOCAL" });
+		return res.status(200).send({
+			results: local.data[0].places.map((place) => ({
+				results: {
+					place_id: place.place_id,
+					name: place.name,
+					opening_hours:
+						place.opening_hours?.weekday_text ?? undefined,
+					price_level: place.price_level
+						? priceMap[place.price_level]
+						: undefined,
+					rating: place.rating,
+					user_ratings_total: place.user_ratings_total,
+				},
+			})),
+			status: "LOCAL",
+		});
 	} else if (key) {
 		try {
 			const response = await axios.get(
@@ -737,7 +757,30 @@ const searchNearbyTool = async (req, res) => {
 					response.data.results,
 					key
 				);
-				res.status(200).send(response.data);
+				console.log({
+					place_id: place.place_id,
+					name: place.name,
+					opening_hours:
+						place.opening_hours?.weekday_text ?? undefined,
+					price_level: place.price_level
+						? priceMap[place.price_level]
+						: undefined,
+					rating: place.rating,
+					user_ratings_total: place.user_ratings_total,
+				});
+				res.status(200).send({
+					results: response.data.results.map((place) => ({
+						place_id: place.place_id,
+						name: place.name,
+						opening_hours:
+							place.opening_hours?.weekday_text ?? undefined,
+						price_level: place.price_level
+							? priceMap[place.price_level]
+							: undefined,
+						rating: place.rating,
+						user_ratings_total: place.user_ratings_total,
+					})),
+				});
 			}
 		} catch (error) {
 			console.error(error.message);
