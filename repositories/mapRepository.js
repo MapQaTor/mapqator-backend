@@ -160,7 +160,7 @@ const addNewDirections = async (
 	return result;
 };
 
-const searchNearby = async (location, type, keyword, rankby, radius) => {
+const searchNearby = async (location, type, rankby, radius) => {
 	const query = `
         SELECT N.location, N.type, N.keyword, N.rankby, N.radius, json_agg(json_build_object(
             'place_id', P.place_id,
@@ -170,10 +170,10 @@ const searchNearby = async (location, type, keyword, rankby, radius) => {
         FROM nearby N
         JOIN nearby_places NP ON NP.nearby_id = N.id
         JOIN places P ON P.place_id = NP.place_id
-        WHERE location = $1 AND type = $2 AND keyword = $3 AND rankby = $4 AND radius = $5
+        WHERE location = $1 AND type = $2 AND rankby = $3 AND radius = $4
         GROUP BY N.id, N.location, N.type, N.keyword, N.rankby, N.radius
     `;
-	const params = [location, type, keyword, rankby, radius];
+	const params = [location, type, rankby, radius];
 	const result = await base.query(query, params);
 	return result;
 };
@@ -222,44 +222,55 @@ const getDetails = async (place_id, api_key) => {
 	}
 };
 
-const addNearby = async (
-	location,
-	type,
-	keyword,
-	rankby,
-	radius,
-	places,
-	api_key
-) => {
-	await base.startTransaction();
-	const query = `
-        INSERT INTO nearby (location, type, keyword, rankby, radius)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *
-    `;
-	const params = [location, type, keyword, rankby, radius];
-	const result = await base.query(query, params);
-	if (!result.success || result.data.length === 0) return result;
+const addNearby = async (location, type, rankby, radius, places, api_key) => {
+	try {
+		await base.startTransaction();
+		const query = `
+            INSERT INTO nearby (location, type, rankby, radius)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+		const params = [location, type, rankby, radius];
+		const result = await base.query(query, params);
 
-	const nearbyId = result.data[0].id;
-	const placeQuery = `
-        INSERT INTO nearby_places (nearby_id, place_id)
-        VALUES ($1, $2)
-    `;
-	for (const place of places) {
-		const placeParams = [nearbyId, place.place_id];
-		if (await getDetails(place.place_id, api_key)) {
-			const res = await base.query(placeQuery, placeParams);
-			if (!res.success) {
-				await base.rollbackTransaction();
-				return null;
-			}
-		} else {
-			console.error("Error adding nearby places");
+		if (!result.success || result.data.length === 0) {
+			await base.rollbackTransaction();
+			return result;
 		}
+
+		const nearbyId = result.data[0].id;
+		const placeQuery = `
+            INSERT INTO nearby_places (nearby_id, place_id)
+            VALUES ($1, $2)
+        `;
+
+		for (const place of places) {
+			const placeParams = [nearbyId, place.place_id];
+			const details = await getDetails(place.place_id, api_key);
+
+			if (details) {
+				const res = await base.query(placeQuery, placeParams);
+				if (!res.success) {
+					await base.rollbackTransaction();
+					return {
+						success: false,
+						message: "Error adding nearby places",
+					};
+				}
+			} else {
+				console.error(
+					`Error fetching details for place_id: ${place.place_id}`
+				);
+			}
+		}
+
+		await base.endTransaction();
+		return result;
+	} catch (error) {
+		await base.rollbackTransaction();
+		console.error("Transaction failed:", error);
+		return { success: false, message: "Transaction failed", error };
 	}
-	await base.endTransaction();
-	return result;
 };
 
 const addNearbyNew = async (

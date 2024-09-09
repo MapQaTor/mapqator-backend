@@ -11,15 +11,14 @@ let geometry;
 })();
 
 const getSingleDistance = async (key, origin, destination, mode) => {
-	// const local = await mapRepository.getDistance(origin, destination, mode);
-	// if (local.success && local.data.length > 0) {
-	// 	return {
-	// 		distance: local.data[0].distance,
-	// 		duration: local.data[0].duration,
-	// 		status: "LOCAL",
-	// 	};
-	// } else
-	if (key) {
+	const local = await mapRepository.getDistance(origin, destination, mode);
+	if (local.success && local.data.length > 0) {
+		return {
+			distance: local.data[0].distance,
+			duration: local.data[0].duration,
+			status: "LOCAL",
+		};
+	} else if (key) {
 		try {
 			console.log(origin, destination, mode);
 			const response = await axios.get(
@@ -121,6 +120,35 @@ const getDistance = async (req, res) => {
 	}
 	console.log(matrix);
 	res.status(200).send({ matrix: matrix });
+};
+
+const getDistanceCustom = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+	const origin = req.query.origin;
+	const destination = req.query.destination;
+	const mode = req.query.mode.toLowerCase();
+	const matrix = [];
+	const distanceData = await getSingleDistance(
+		key,
+		origin,
+		destination,
+		mode
+	);
+	if (distanceData) {
+		res.status(200).send({
+			matrix: [
+				[
+					{
+						distance: distanceData.distance,
+						duration: distanceData.duration,
+						status: distanceData.status || "OK",
+					},
+				],
+			],
+		});
+	} else {
+		res.status(400).send({ error: "An error occurred" });
+	}
 };
 
 const getLocalDirections = async (req, res) => {
@@ -401,13 +429,12 @@ const getDirections = async (req, res) => {
 	const destination = req.query.destination;
 	const mode = req.query.mode.toLowerCase();
 	const key = req.header("google_maps_api_key");
-	// const local = await mapRepository.getDirections(origin, destination, mode);
-	// if (local.success && local.data.length > 0) {
-	// 	return res
-	// 		.status(200)
-	// 		.send({ routes: local.data[0].routes, status: "LOCAL" });
-	// } else
-	if (key) {
+	const local = await mapRepository.getDirections(origin, destination, mode);
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ routes: local.data[0].routes, status: "LOCAL" });
+	} else if (key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/directions/json",
@@ -427,6 +454,64 @@ const getDirections = async (req, res) => {
 			mapRepository.addDirections(origin, destination, mode, details);
 			// console.log(response.data);
 			res.status(200).send(response.data);
+		} catch (error) {
+			res.status(400).send({ error: "An error occurred" });
+			console.error(error.message);
+		}
+	} else {
+		res.status(400).send({
+			error: "Can't find direction in the local database",
+		});
+	}
+};
+
+const getCustomDirections = async (req, res) => {
+	const origin = req.query.origin;
+	const destination = req.query.destination;
+	const mode = req.query.mode.toLowerCase();
+	const key = req.header("google_maps_api_key");
+	const local = await mapRepository.getDirections(origin, destination, mode);
+	if (local.success && local.data.length > 0) {
+		return res.status(200).send({
+			routes: local.data[0].routes.map((route) => ({
+				legs: route.legs.map((leg) => ({
+					distance: leg.distance.text,
+					duration: leg.duration.text,
+					steps: leg.steps.map((step) => step.html_instructions),
+				})),
+				via: route.summary,
+			})),
+			status: "LOCAL",
+		});
+	} else if (key) {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/directions/json",
+				{
+					params: {
+						origin: "place_id:" + origin,
+						destination: "place_id:" + destination,
+						key: key,
+						mode: mode,
+						language: "en",
+						alternatives: true,
+					},
+				}
+			);
+
+			const details = JSON.parse(JSON.stringify(response.data.routes));
+			mapRepository.addDirections(origin, destination, mode, details);
+			console.log(response.data);
+			res.status(200).send({
+				routes: details.routes.map((route) => ({
+					legs: route.legs.map((leg) => ({
+						distance: leg.distance.text,
+						duration: leg.duration.text,
+						steps: leg.steps.map((step) => step.html_instructions),
+					})),
+				})),
+				via: route.summary,
+			});
 		} catch (error) {
 			res.status(400).send({ error: "An error occurred" });
 			console.error(error.message);
@@ -532,18 +617,17 @@ const searchNearbyNew = async (req, res) => {
 const searchNearby = async (req, res) => {
 	console.log(req.query);
 	const location = req.query.location;
-	const type = req.query.type || "any";
-	const keyword = req.query.keyword || "";
+	const type = req.query.type;
+	const keyword = req.query.keyword;
 	const rankby = req.query.rankby || "prominence";
-	const radius = req.query.radius || 1;
+	const radius = req.query.radius;
 	const key = req.header("google_maps_api_key");
-	// const local = await mapRepository.searchNearby(
-	// 	location,
-	// 	type,
-	// 	keyword,
-	// 	rankby,
-	// 	radius
-	// );
+	const local = await mapRepository.searchNearby(
+		location,
+		type || keyword,
+		rankby,
+		radius
+	);
 	// if (local.success && local.data.length > 0) {
 	// 	return res
 	// 		.status(200)
@@ -572,8 +656,82 @@ const searchNearby = async (req, res) => {
 			else {
 				mapRepository.addNearby(
 					location,
-					type,
-					keyword,
+					type || keyword,
+					rankby,
+					radius,
+					response.data.results,
+					key
+				);
+				res.status(200).send(response.data);
+			}
+		} catch (error) {
+			console.error(error.message);
+			res.status(400).send({ error: "An error occurred" });
+		}
+	} else {
+		res.status(400).send({
+			error: "Can't find nearby places in the local database",
+		});
+	}
+};
+
+const searchNearbyTool = async (req, res) => {
+	const location = req.query.location;
+	const type = req.query.type;
+	const keyword = req.query.keyword;
+	const rankby = req.query.rankby || "prominence";
+	const radius = req.query.radius;
+	const key = req.header("google_maps_api_key");
+	const place = (await placeRepository.getPlace(location)).data[0];
+	if (place === null) {
+		return res.status(400).send({ error: "Invalid location" });
+	}
+
+	const loc = place.geometry.location;
+	const lat = typeof loc.lat === "function" ? loc.lat() : loc.lat;
+	const lng = typeof loc.lng === "function" ? loc.lng() : loc.lng;
+	const local = await mapRepository.searchNearby(
+		location,
+		type || keyword,
+		rankby,
+		radius
+	);
+	if (local.success && local.data.length > 0) {
+		return res
+			.status(200)
+			.send({ results: local.data[0].places, status: "LOCAL" });
+	} else if (key) {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+				{
+					params: {
+						location: lat + "," + lng,
+						radius: req.query.radius,
+						type: req.query.type,
+						keyword: req.query.keyword,
+						rankby: req.query.rankby,
+						key: key,
+					},
+				}
+			);
+			if (response.data.status === "INVALID_REQUEST") {
+				console.log(
+					{
+						location: lat + "," + lng,
+						radius: req.query.radius,
+						type: req.query.type,
+						keyword: req.query.keyword,
+						rankby: req.query.rankby,
+						key: key,
+					},
+					response.data
+				);
+				res.status(400).send({ error: "An error occurred" });
+			} else {
+				mapRepository.addNearby(
+					location,
+					type || keyword,
 					rankby,
 					radius,
 					response.data.results,
@@ -627,6 +785,12 @@ const searchLocalNearby = async (req, res) => {
 
 // https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places
 // https://developers.google.com/maps/documentation/places/web-service/data-fields
+const filterNullAttributes = (obj) => {
+	return Object.fromEntries(
+		Object.entries(obj).filter(([_, v]) => v !== null)
+	);
+};
+
 const getDetailsNew = async (req, res) => {
 	const key = req.header("google_maps_api_key");
 	try {
@@ -637,17 +801,44 @@ const getDetailsNew = async (req, res) => {
 				headers: {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
-					// "X-Goog-FieldMask":
-					// 	"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary,reviews",
 					"X-Goog-FieldMask":
-						"id,location,plusCode,shortFormattedAddress,accessibilityOptions,businessStatus,displayName,googleMapsUri,primaryType,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout",
+						"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary,reviews",
+					// "X-Goog-FieldMask":
+					// 	"id,location,plusCode,shortFormattedAddress,accessibilityOptions,businessStatus,displayName,googleMapsUri,primaryType,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout",
 				},
 			}
 		);
 		const details = JSON.parse(JSON.stringify(response.data));
 		console.log(details);
 		const result = await placeRepository.createPlaceNew(details);
-		res.status(200).send(result.data[0]);
+		const filteredResult = filterNullAttributes(result.data[0]);
+		res.status(200).send({
+			id: filteredResult.id,
+			location: filteredResult.location,
+			shortFormattedAddress: filteredResult.shortFormattedAddress,
+			accessibilityOptions: filteredResult.accessibilityOptions,
+			displayName: filteredResult.displayName,
+			internationalPhoneNumber: filteredResult.internationalPhoneNumber,
+			priceLevel: filteredResult.priceLevel,
+			rating: filteredResult.rating,
+			regularOpeningHours:
+				filteredResult.regularOpeningHours.weekdayDescriptions,
+			userRatingCount: filteredResult.userRatingCount,
+			allowsDogs: filteredResult.allowsDogs,
+			delivery: filteredResult.delivery,
+			dineIn: filteredResult.dineIn,
+			servesBeer: filteredResult.servesBeer,
+			servesBreakfast: filteredResult.servesBreakfast,
+			servesBrunch: filteredResult.servesBrunch,
+			servesCocktails: filteredResult.servesCocktails,
+			servesCoffee: filteredResult.servesCoffee,
+			servesDessert: filteredResult.servesDessert,
+			servesDinner: filteredResult.servesDinner,
+			servesLunch: filteredResult.servesLunch,
+			servesVegetarianFood: filteredResult.servesVegetarianFood,
+			servesWine: filteredResult.servesWine,
+			takeout: filteredResult.takeout,
+		});
 	} catch (error) {
 		console.error(error.message);
 		res.status(400).send({ error: "An error occurred" });
@@ -685,11 +876,90 @@ const getDetails = async (req, res) => {
 					},
 				}
 			);
+			console.log(response.data);
 			const details = JSON.parse(JSON.stringify(response.data.result));
 			// console.log(details);
 			const result = await placeRepository.createPlace(details);
-			console.log(result);
-			res.status(200).send({ result: result.data[0], status: "LOCAL" });
+			const data = result.data[0];
+			res.status(200).send({
+				result: data,
+				status: "LOCAL",
+			});
+		} catch (error) {
+			console.error(error.message);
+			res.status(400).send({ error: "An error occurred" });
+		}
+	} else {
+		res.status(400).send({
+			error: "Can't find the place in the local database",
+		});
+	}
+};
+
+const getDetailsCustom = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+	// const local = await placeRepository.getPlace(req.params.id);
+	// if (
+	// 	local.success &&
+	// 	local.data.length > 0 &&
+	// 	(!key || local.data[0].last_updated)
+	// ) {
+	// 	return res.status(200).send({ result: local.data[0], status: "LOCAL" });
+	// } else
+	if (key) {
+		try {
+			const response = await axios.get(
+				"https://maps.googleapis.com/maps/api/place/details/json",
+				{
+					params: {
+						place_id: req.params.id,
+						key: key,
+						language: "en",
+					},
+				}
+			);
+			const details = JSON.parse(JSON.stringify(response.data.result));
+			// console.log(details);
+			const result = await placeRepository.createPlace(details);
+			const data = result.data[0];
+			const priceMap = [
+				"Free",
+				"Inexpensive",
+				"Moderate",
+				"Expensive",
+				"Very Expensive",
+			];
+			res.status(200).send({
+				result: {
+					place_id: data.place_id ?? undefined,
+					name: data.name ?? undefined,
+					formatted_address: data.formatted_address ?? undefined,
+					phone_number: data.phone_number ?? undefined,
+					geometry: data.geometry ?? undefined,
+					price_level: data.price_level
+						? priceMap[data.price_level]
+						: undefined,
+					opening_hours:
+						data.opening_hours?.weekday_text ?? undefined,
+					rating: data.rating ?? undefined,
+					user_ratings_total: data.user_ratings_total ?? undefined,
+					delivery: data.delivery ?? undefined,
+					dine_in: data.dine_in ?? undefined,
+					reservable: data.reservable ?? undefined,
+					takeout: data.takeout ?? undefined,
+					serves_beer: data.serves_beer ?? undefined,
+					serves_breakfast: data.serves_breakfast ?? undefined,
+					serves_brunch: data.serves_brunch ?? undefined,
+					serves_dinner: data.serves_dinner ?? undefined,
+					serves_lunch: data.serves_lunch ?? undefined,
+					serves_vegetarian_food:
+						data.serves_vegetarian_food ?? undefined,
+					serves_wine: data.serves_wine ?? undefined,
+					wheelchair_accessible_entrance:
+						data.wheelchair_accessible_entrance ?? undefined,
+				},
+				status: "LOCAL",
+			});
 		} catch (error) {
 			console.error(error.message);
 			res.status(400).send({ error: "An error occurred" });
@@ -753,6 +1023,9 @@ const searchText = async (req, res) => {
 				}
 			);
 
+			for (const place of response.data.results) {
+				await placeRepository.createPlace(place);
+			}
 			// console.log(response.data);
 			res.status(200).send(response.data);
 		} catch (error) {
@@ -834,13 +1107,17 @@ const searchLocalInside = async (req, res) => {
 module.exports = {
 	searchNearbyNew,
 	searchNearby,
+	searchNearbyTool,
 	searchLocalNearby,
 	searchTextNew,
 	searchText,
 	getDetails,
 	getDetailsNew,
+	getDetailsCustom,
 	getLocalDetails,
 	getDistance,
+	getDistanceCustom,
+	getCustomDirections,
 	getLocalDistance,
 	getDirections,
 	getLocalDirections,
