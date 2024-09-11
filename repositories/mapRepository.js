@@ -179,6 +179,7 @@ const searchNearby = async (location, type, rankby, radius) => {
     `;
 	const params = [location, type, rankby, radius];
 	const result = await base.query(query, params);
+	console.log(result);
 	return result;
 };
 
@@ -227,6 +228,7 @@ const getDetails = async (place_id, api_key) => {
 };
 
 const addNearby = async (location, type, rankby, radius, places, api_key) => {
+	// console.log(location, type, rankby, radius, places);
 	try {
 		await base.startTransaction();
 		const query = `

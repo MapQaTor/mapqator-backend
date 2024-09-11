@@ -21,14 +21,18 @@ router.use(setGoogleMapApiKey);
 router.get("/search", mapController.searchText);
 router.get("/directions", mapController.getDirections);
 router.get("/directions/local", mapController.getLocalDirections);
+router.get("/directions/custom", mapController.getCustomDirections);
 
 router.get("/nearby", mapController.searchNearby);
+router.get("/nearby/tool", mapController.searchNearbyTool);
 router.get("/nearby/local", mapController.searchLocalNearby);
 router.get("/inside", mapController.searchInside);
 router.get("/inside/local", mapController.searchLocalInside);
 router.get("/details/:id", mapController.getDetails);
+router.get("/details/custom/:id", mapController.getDetailsCustom);
 router.get("/details/local/:name", mapController.getLocalDetails);
 router.get("/distance", mapController.getDistance);
+router.get("/distance/custom", mapController.getDistanceCustom);
 router.get("/distance/local", mapController.getLocalDistance);
 
 // New API

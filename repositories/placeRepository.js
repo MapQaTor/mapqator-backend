@@ -2,8 +2,8 @@ const base = require("./base");
 const dataFields = require("../database/dataFields.json");
 const createPlace = async (place) => {
 	const query = `
-		INSERT INTO places (place_id, name, formatted_address, geometry, opening_hours, rating, reviews, price_level, types, user_ratings_total, delivery, dine_in, reservable, serves_beer, serves_breakfast, serves_brunch, serves_dinner, serves_lunch, serves_vegetarian_food, serves_wine, takeout, wheelchair_accessible_entrance, vicinity, phone_number, last_updated) 
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, NOW()) 
+		INSERT INTO places (place_id, name, formatted_address, geometry, opening_hours, rating, reviews, price_level, types, user_ratings_total, delivery, dine_in, reservable, serves_beer, serves_breakfast, serves_brunch, serves_dinner, serves_lunch, serves_vegetarian_food, serves_wine, takeout, wheelchair_accessible_entrance, vicinity, phone_number, address_components, last_updated) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, NOW()) 
 		ON CONFLICT (place_id) DO UPDATE SET 
 		name = EXCLUDED.name, 
 		formatted_address = EXCLUDED.formatted_address, 
@@ -28,6 +28,7 @@ const createPlace = async (place) => {
 		wheelchair_accessible_entrance = EXCLUDED.wheelchair_accessible_entrance,
 		vicinity = EXCLUDED.vicinity,
 		phone_number = EXCLUDED.phone_number,
+		address_components = EXCLUDED.address_components,
 		last_updated = NOW()
 		RETURNING *
 	`;
@@ -56,6 +57,7 @@ const createPlace = async (place) => {
 		place.wheelchair_accessible_entrance || null,
 		place.vicinity || null,
 		place.international_phone_number || null,
+		place.address_components || null,
 	];
 
 	const result = await base.query(query, params);

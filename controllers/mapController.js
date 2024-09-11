@@ -614,13 +614,35 @@ const searchNearbyNew = async (req, res) => {
 	}
 };
 
+const formatNearbyPlace = (place) => {
+	// console.log({
+	// 	place_id: place.place_id,
+	// 	name: place.name,
+	// 	opening_hours: place.opening_hours,
+	// 	price_level: place.price_level,
+	// 	rating: place.rating,
+	// 	user_ratings_total: place.user_ratings_total,
+	// 	vicinity: place.vicinity,
+	// });
+
+	return {
+		place_id: place.place_id,
+		name: place.name,
+		opening_hours: place.opening_hours,
+		price_level: place.price_level,
+		rating: place.rating,
+		user_ratings_total: place.user_ratings_total,
+		vicinity: place.vicinity,
+	};
+};
+
 const searchNearby = async (req, res) => {
-	console.log(req.query);
+	// console.log(req.query);
 	const location = req.query.location;
 	const type = req.query.type;
 	const keyword = req.query.keyword;
 	const rankby = req.query.rankby || "prominence";
-	const radius = req.query.radius;
+	const radius = req.query.radius || 1;
 	const key = req.header("google_maps_api_key");
 	const local = await mapRepository.searchNearby(
 		location,
@@ -628,12 +650,14 @@ const searchNearby = async (req, res) => {
 		rankby,
 		radius
 	);
-	// if (local.success && local.data.length > 0) {
-	// 	return res
-	// 		.status(200)
-	// 		.send({ results: local.data[0].places, status: "LOCAL" });
-	// } else
-	if (key) {
+	if (local.success && local.data.length > 0) {
+		return res.status(200).send({
+			results: local.data[0].places.map((place) =>
+				formatNearbyPlace(place)
+			),
+			status: "LOCAL",
+		});
+	} else if (key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
@@ -654,7 +678,7 @@ const searchNearby = async (req, res) => {
 			if (response.data.status === "INVALID_REQUEST")
 				res.status(400).send({ error: "An error occurred" });
 			else {
-				mapRepository.addNearby(
+				await mapRepository.addNearby(
 					location,
 					type || keyword,
 					rankby,
@@ -662,7 +686,12 @@ const searchNearby = async (req, res) => {
 					response.data.results,
 					key
 				);
-				res.status(200).send(response.data);
+				res.status(200).send({
+					results: response.data.results.map((place) =>
+						formatNearbyPlace(place)
+					),
+					status: "OK",
+				});
 			}
 		} catch (error) {
 			console.error(error.message);
@@ -680,7 +709,7 @@ const searchNearbyTool = async (req, res) => {
 	const type = req.query.type;
 	const keyword = req.query.keyword;
 	const rankby = req.query.rankby || "prominence";
-	const radius = req.query.radius;
+	const radius = req.query.radius || 1;
 	const key = req.header("google_maps_api_key");
 	const place = (await placeRepository.getPlace(location)).data[0];
 	if (place === null) {
@@ -706,17 +735,14 @@ const searchNearbyTool = async (req, res) => {
 	if (local.success && local.data.length > 0) {
 		return res.status(200).send({
 			results: local.data[0].places.map((place) => ({
-				results: {
-					place_id: place.place_id,
-					name: place.name,
-					opening_hours:
-						place.opening_hours?.weekday_text ?? undefined,
-					price_level: place.price_level
-						? priceMap[place.price_level]
-						: undefined,
-					rating: place.rating,
-					user_ratings_total: place.user_ratings_total,
-				},
+				place_id: place.place_id,
+				name: place.name,
+				opening_hours: place.opening_hours?.weekday_text ?? undefined,
+				price_level: place.price_level
+					? priceMap[place.price_level]
+					: undefined,
+				rating: place.rating,
+				user_ratings_total: place.user_ratings_total,
 			})),
 			status: "LOCAL",
 		});
@@ -749,7 +775,7 @@ const searchNearbyTool = async (req, res) => {
 				);
 				res.status(400).send({ error: "An error occurred" });
 			} else {
-				mapRepository.addNearby(
+				await mapRepository.addNearby(
 					location,
 					type || keyword,
 					rankby,
@@ -757,17 +783,7 @@ const searchNearbyTool = async (req, res) => {
 					response.data.results,
 					key
 				);
-				console.log({
-					place_id: place.place_id,
-					name: place.name,
-					opening_hours:
-						place.opening_hours?.weekday_text ?? undefined,
-					price_level: place.price_level
-						? priceMap[place.price_level]
-						: undefined,
-					rating: place.rating,
-					user_ratings_total: place.user_ratings_total,
-				});
+
 				res.status(200).send({
 					results: response.data.results.map((place) => ({
 						place_id: place.place_id,
