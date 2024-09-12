@@ -881,7 +881,8 @@ const getDetailsNew = async (req, res) => {
 			priceLevel: filteredResult.priceLevel,
 			rating: filteredResult.rating,
 			regularOpeningHours:
-				filteredResult.regularOpeningHours.weekdayDescriptions,
+				filteredResult.regularOpeningHours?.weekdayDescriptions ??
+				undefined,
 			userRatingCount: filteredResult.userRatingCount,
 			allowsDogs: filteredResult.allowsDogs,
 			delivery: filteredResult.delivery,
