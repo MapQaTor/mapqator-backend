@@ -159,6 +159,7 @@ const getQueries = async () => {
 		ON DS.id = E.query_id
 		LEFT JOIN models M
 		ON E.model_id = M.id
+		WHERE deleted = false
 		GROUP BY DS.id, H.answer, H.explanation, H.username
 		ORDER BY id DESC
 	`;
@@ -168,7 +169,12 @@ const getQueries = async () => {
 };
 
 const deleteQuery = async (id) => {
-	const query = "DELETE FROM dataset WHERE id = $1";
+	// const query = "DELETE FROM dataset WHERE id = $1";
+	const query = `
+		UPDATE dataset
+		SET deleted = true
+		WHERE id = $1
+	`;
 	const params = [id];
 	const result = await base.query(query, params);
 	await base.delete_redis("rediskey" + "Queries");
