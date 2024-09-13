@@ -196,6 +196,7 @@ const getModels = async () => {
 	const query = `
 		SELECT *
 		FROM models
+		where hidden = false
 	`;
 	const params = [];
 	const result = await base.query(query, params);
