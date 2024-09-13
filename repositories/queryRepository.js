@@ -159,7 +159,7 @@ const getQueries = async () => {
 		ON DS.id = E.query_id
 		LEFT JOIN models M
 		ON E.model_id = M.id
-		WHERE deleted = false
+		WHERE deleted = false and M.id != 13
 		GROUP BY DS.id, H.answer, H.explanation, H.username
 		ORDER BY id DESC
 	`;
