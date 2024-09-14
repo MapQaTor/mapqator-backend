@@ -14,6 +14,7 @@ const createQuery = async (req, res) => {
 	// if (username === "tanvirparvez") {
 	// 	return res.status(401).send("Error: Unauthorized");
 	// }
+	return res.status(400).send("Error: No More New Query");
 	const result = await queryRepository.createQuery(query, username);
 	if (result.success) {
 		res.status(201).send(
@@ -179,6 +180,7 @@ const updateQueryWithEvaluation = async (req, res) => {
 };
 
 const deleteQuery = async (req, res) => {
+	return res.status(400).send("Error: Can't delete query");
 	const id = parseInt(req.params.id);
 	const result = await queryRepository.deleteQuery(id);
 	if (result.success) {
