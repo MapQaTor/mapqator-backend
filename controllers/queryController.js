@@ -11,9 +11,9 @@ const client = new OpenAIClient(
 const createQuery = async (req, res) => {
 	const query = req.body;
 	const { username } = req.user;
-	if (username === "tanvirparvez") {
-		return res.status(401).send("Error: Unauthorized");
-	}
+	// if (username === "tanvirparvez") {
+	// 	return res.status(401).send("Error: Unauthorized");
+	// }
 	const result = await queryRepository.createQuery(query, username);
 	if (result.success) {
 		res.status(201).send(
@@ -97,9 +97,9 @@ const submitForEvaluation = async (req, res) => {
 
 const getQueries = async (req, res) => {
 	const { username } = req.user;
-	if (username === "tanvirparvez") {
-		return res.status(401).send("Error: Unauthorized");
-	}
+	// if (username === "tanvirparvez") {
+	// 	return res.status(401).send("Error: Unauthorized");
+	// }
 	const result = await queryRepository.getQueries();
 	if (result.success) {
 		res.send(result.data);
