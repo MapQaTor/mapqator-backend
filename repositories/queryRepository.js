@@ -151,7 +151,7 @@ const getNewQueries = async () => {
 
 const getQueries = async () => {
 	const query = `
-		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name, 'model_id', M.id, 'type', E.type)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation, json_build_object('answer', H.answer, 'explanation', H.explanation, 'username', H.username) as human
+		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name, 'model_id', M.id, 'type', E.type, 'option', E.option)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation, json_build_object('answer', H.answer, 'explanation', H.explanation, 'username', H.username) as human
 		FROM dataset DS
 		LEFT JOIN human H
 		ON DS.id = H.query_id
@@ -190,7 +190,7 @@ const deleteNewQuery = async (id) => {
 
 const getDataset = async () => {
 	const query = `
-		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name, 'model_id', M.id, 'type', E.type)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation, json_build_object('answer', H.answer, 'explanation', H.explanation, 'username', H.username) as human
+		SELECT DS.id, DS.question, DS.answer, DS.context, DS.context_json, DS.classification, DS.context_gpt, DS.username, COALESCE(json_agg(json_build_object('answer', E.answer, 'verdict', E.verdict, 'model', M.name, 'model_id', M.id, 'type', E.type, 'option', E.option)) FILTER (WHERE M.name IS NOT NULL), '[]') as evaluation, json_build_object('answer', H.answer, 'explanation', H.explanation, 'username', H.username) as human
 		FROM dataset DS
 		LEFT JOIN human H
 		ON DS.id = H.query_id

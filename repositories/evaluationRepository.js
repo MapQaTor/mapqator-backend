@@ -3,25 +3,20 @@ const base = require("./base");
 const insertResult = async (result) => {
 	for (const row of result) {
 		const query = `
-            INSERT INTO evaluations (query_id, model_id, answer, verdict, type)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO evaluations (query_id, model_id, answer, verdict, type, option)
+            VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (query_id, model_id, type) DO UPDATE SET
             answer = $3, verdict = $4 
             RETURNING *
         `;
-		console.log([
-			row.query_id,
-			row.model_id,
-			row.answer,
-			row.verdict,
-			row.type,
-		]);
+
 		const params = [
 			row.query_id,
 			row.model_id,
 			row.answer,
 			row.verdict,
 			row.type,
+			row.option,
 		];
 		await base.query(query, params);
 	}
