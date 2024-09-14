@@ -5,10 +5,17 @@ const insertResult = async (result) => {
 		const query = `
             INSERT INTO evaluations (query_id, model_id, answer, verdict, type)
             VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (query_id, model_id) DO UPDATE SET
+            ON CONFLICT (query_id, model_id, type) DO UPDATE SET
             answer = $3, verdict = $4 
             RETURNING *
         `;
+		console.log([
+			row.query_id,
+			row.model_id,
+			row.answer,
+			row.verdict,
+			row.type,
+		]);
 		const params = [
 			row.query_id,
 			row.model_id,
