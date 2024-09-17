@@ -14,7 +14,7 @@ const createQuery = async (req, res) => {
 	// if (username === "tanvirparvez") {
 	// 	return res.status(401).send("Error: Unauthorized");
 	// }
-	return res.status(400).send("Error: No More New Query");
+	// return res.status(400).send("Error: No More New Query");
 	const result = await queryRepository.createQuery(query, username);
 	if (result.success) {
 		res.status(201).send(
