@@ -200,7 +200,7 @@ const getDataset = async () => {
 		ON E.model_id = M.id
 		WHERE deleted = false
 		GROUP BY DS.id, H.answer, H.explanation, H.username
-		ORDER BY id DESC
+		ORDER BY id ASC
 	`;
 	const result = await base.query(query);
 	return result;
