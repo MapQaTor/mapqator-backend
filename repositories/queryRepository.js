@@ -46,7 +46,7 @@ const updateCategory = async (id, category) => {
 };
 
 const updateQuery = async (id, record) => {
-	await evaluationRepository.deleteEvaluationByQuery(id);
+	// await evaluationRepository.deleteEvaluationByQuery(id);
 	const query = `
 			UPDATE dataset
 			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
