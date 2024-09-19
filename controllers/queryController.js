@@ -180,7 +180,7 @@ const updateQueryWithEvaluation = async (req, res) => {
 };
 
 const deleteQuery = async (req, res) => {
-	return res.status(400).send("Error: Can't delete query");
+	// return res.status(400).send("Error: Can't delete query");
 	const id = parseInt(req.params.id);
 	const result = await queryRepository.deleteQuery(id);
 	if (result.success) {
