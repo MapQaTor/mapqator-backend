@@ -644,6 +644,20 @@ const searchNearby = async (req, res) => {
 	const rankby = req.query.rankby || "prominence";
 	const radius = req.query.radius || 1;
 	const key = req.header("google_maps_api_key");
+	if (!location) {
+		return res.status(400).send({ error: "Invalid location" });
+	}
+	const result = await placeRepository.getPlace(location);
+	if (!result.success) {
+		return res.status(400).send({ error: "Invalid location" });
+	}
+	const place = result.data[0];
+	if (!place) {
+		return res.status(400).send({ error: "Invalid location" });
+	}
+	const loc = place.geometry.location;
+	const lat = typeof loc.lat === "function" ? loc.lat() : loc.lat;
+	const lng = typeof loc.lng === "function" ? loc.lng() : loc.lng;
 	const local = await mapRepository.searchNearby(
 		location,
 		type || keyword,
@@ -663,10 +677,13 @@ const searchNearby = async (req, res) => {
 				"https://maps.googleapis.com/maps/api/place/nearbysearch/json",
 				{
 					params: {
-						location: req.query.lat + "," + req.query.lng,
-						radius: req.query.radius,
+						location: lat + "," + lng,
 						type: req.query.type,
 						keyword: req.query.keyword,
+						radius:
+							req.query.rankby === "distance"
+								? undefined
+								: req.query.radius,
 						rankby: req.query.rankby,
 						key: key,
 						language: "en",
@@ -712,7 +729,7 @@ const searchNearbyTool = async (req, res) => {
 	const radius = req.query.radius || 1;
 	const key = req.header("google_maps_api_key");
 	const place = (await placeRepository.getPlace(location)).data[0];
-	if (place === null) {
+	if (!place) {
 		return res.status(400).send({ error: "Invalid location" });
 	}
 	const priceMap = [
@@ -762,17 +779,17 @@ const searchNearbyTool = async (req, res) => {
 				}
 			);
 			if (response.data.status === "INVALID_REQUEST") {
-				console.log(
-					{
-						location: lat + "," + lng,
-						radius: req.query.radius,
-						type: req.query.type,
-						keyword: req.query.keyword,
-						rankby: req.query.rankby,
-						key: key,
-					},
-					response.data
-				);
+				// console.log(
+				// 	{
+				// 		location: lat + "," + lng,
+				// 		radius: req.query.radius,
+				// 		type: req.query.type,
+				// 		keyword: req.query.keyword,
+				// 		rankby: req.query.rankby,
+				// 		key: key,
+				// 	},
+				// 	response.data
+				// );
 				res.status(400).send({ error: "An error occurred" });
 			} else {
 				await mapRepository.addNearby(
@@ -916,15 +933,10 @@ const getLocalDetails = async (req, res) => {
 
 const getDetails = async (req, res) => {
 	const key = req.header("google_maps_api_key");
-	// const local = await placeRepository.getPlace(req.params.id);
-	// if (
-	// 	local.success &&
-	// 	local.data.length > 0 &&
-	// 	(!key || local.data[0].last_updated)
-	// ) {
-	// 	return res.status(200).send({ result: local.data[0], status: "LOCAL" });
-	// } else
-	if (key) {
+	const local = await placeRepository.getPlace(req.params.id);
+	if (local.success && local.data.length > 0 && !key) {
+		return res.status(200).send({ result: local.data[0], status: "LOCAL" });
+	} else if (key) {
 		try {
 			const response = await axios.get(
 				"https://maps.googleapis.com/maps/api/place/details/json",
