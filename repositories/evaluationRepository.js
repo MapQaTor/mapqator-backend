@@ -6,7 +6,7 @@ const insertResult = async (result) => {
             INSERT INTO evaluations (query_id, model_id, answer, verdict, type, option)
             VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (query_id, model_id, type) DO UPDATE SET
-            answer = $3, verdict = $4 
+            answer = $3, verdict = $4, option = $6
             RETURNING *
         `;
 
@@ -80,7 +80,7 @@ const deleteEvaluationByQuery = async (query_id) => {
 	console.log("Deleting evaluations for query_id: " + query_id);
 	const query = `
 		DELETE FROM evaluations
-		WHERE query_id = $1 AND model_id != 0
+		WHERE query_id = $1 AND model_id != 0 AND type = 0
 	`;
 	const params = [query_id];
 	const result = await base.query(query, params);
