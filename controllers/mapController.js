@@ -446,6 +446,7 @@ const getDirections = async (req, res) => {
 						mode: mode,
 						language: "en",
 						alternatives: true,
+						units: "metric",
 					},
 				}
 			);
@@ -633,6 +634,7 @@ const formatNearbyPlace = (place) => {
 		rating: place.rating,
 		user_ratings_total: place.user_ratings_total,
 		vicinity: place.vicinity,
+		geometry: place.geometry,
 	};
 };
 

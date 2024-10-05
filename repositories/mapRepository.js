@@ -169,7 +169,8 @@ const searchNearby = async (location, type, rankby, radius) => {
 			'rating', P.rating,
 			'price_level', P.price_level,
 			'opening_hours', P.opening_hours,
-			'user_ratings_total', P.user_ratings_total
+			'user_ratings_total', P.user_ratings_total,
+			'geometry', P.geometry
         )) AS places
         FROM nearby N
         JOIN nearby_places NP ON NP.nearby_id = N.id

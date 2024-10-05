@@ -46,9 +46,9 @@ const updateCategory = async (id, category) => {
 };
 
 const updateQuery = async (id, record) => {
-	// await evaluationRepository.deleteEvaluationByQuery(id);
+	await evaluationRepository.deleteEvaluationByQuery(id);
 	const query = `
-			UPDATE dataset
+			UPDATE dataset	
 			SET question = $1, answer = $2, context = $3, context_json = $4, classification = $5, context_gpt = $6
 			WHERE id = $7
 			RETURNING *
@@ -158,13 +158,15 @@ const getQueries = async () => {
 		LEFT JOIN evaluations E
 		ON DS.id = E.query_id
 		LEFT JOIN models M
-		ON E.model_id = M.id
-		WHERE deleted = false and M.hidden = false
+		ON E.model_id = M.id AND M.hidden = false
+		WHERE deleted = false
 		GROUP BY DS.id, H.answer, H.explanation, H.username
 		ORDER BY id DESC
 	`;
 	const key = "rediskey" + "Queries";
 	const result = await base.query_redis(key, query);
+
+	// const result = await base.query(query);
 	return result;
 };
 
