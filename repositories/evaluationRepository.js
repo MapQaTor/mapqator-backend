@@ -25,6 +25,24 @@ const insertResult = async (result) => {
 	return { success: true };
 };
 
+const insertNewResult = async (result) => {
+	for (const row of result) {
+		const query = `
+            INSERT INTO new_evaluations (query_id, model_id, responses, type)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (query_id, model_id, type) DO UPDATE SET
+            responses = $3
+            RETURNING *
+        `;
+
+		const params = [row.query_id, row.model_id, row.responses, row.type];
+		await base.query(query, params);
+	}
+
+	await base.delete_redis("rediskey" + "Queries");
+	return { success: true };
+};
+
 const insertResultByQuery = async (query_id, model_id, answer, verdict) => {
 	const query = `
 		INSERT INTO evaluations (query_id, model_id, answer, verdict)
@@ -101,6 +119,7 @@ const deleteNewEvaluationByQuery = async (query_id) => {
 
 module.exports = {
 	insertResult,
+	insertNewResult,
 	getAllResults,
 	getResultsByQuery,
 	getResultsByModel,

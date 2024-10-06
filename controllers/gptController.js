@@ -1,9 +1,14 @@
 const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 const queryRepository = require("../repositories/queryRepository");
 
+// const client = new OpenAIClient(
+// 	process.env.AZURE_OPENAI_ENDPOINT,
+// 	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
+// );
+
 const client = new OpenAIClient(
-	process.env.AZURE_OPENAI_ENDPOINT,
-	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
+	"https://qcri-llm-rag-4.openai.azure.com/",
+	new AzureKeyCredential("01488083a8d243e684bd48a39152d90a")
 );
 
 const translateContext = async (req, res) => {
@@ -381,8 +386,64 @@ const askGPT = async (req, res) => {
 	}
 };
 
+const askMulipleQuestions = async (req, res) => {
+	const { questions } = req.body.query;
+	// console.log(req.body.query);
+
+	if (!questions) {
+		return res.status(400).send({ error: "Questions not provided" });
+	}
+
+	let answers = [];
+	for (let i = 0; i < questions?.length; i++) {
+		const { title: question, answer } = questions[i];
+		if (question === "") continue;
+		let options = ""; // Assuming prompt is initialized earlier in your code
+
+		for (let j = 0; j < answer.options.length; j++) {
+			if (answer.options[j] === "") {
+				break;
+			}
+			options += `Option${j + 1}: ${answer.options[j]}, `;
+		}
+
+		const message_text = [
+			{
+				role: "system",
+				content:
+					"You are an AI assistant that answers Place related MCQ questions.",
+			},
+			{
+				role: "user",
+				content: `Context:\n${req.body.context} Question:\n${question}  Options:\n${options}. Choose the answer from the following options (1/2/3/4). And give explanation in bracket. So, the output format will be \"Option_Number (Explanation). If there is no answer in the options, then return 0 first and explain the reason. Remember you need to answer the question only from the context, not using any of your own knowledge. If the question can't be answered from the context notify it. Also return 0 if the correct answer is not present in the options.)`,
+			},
+		];
+
+		try {
+			const { choices } = await client.getChatCompletions(
+				process.env.AZURE_OPENAI_MODEL,
+				message_text,
+				{
+					max_tokens: 512,
+					temperature: 0,
+					top_p: 1,
+					frequency_penalty: 0,
+					presence_penalty: 0,
+				}
+			);
+			console.log(choices[0].message["content"]);
+			answers.push(choices[0].message["content"]);
+		} catch (error) {
+			answers.push("An error occurred");
+		}
+	}
+	console.log(answers);
+
+	return res.send(answers);
+};
+
 const askGPTLive = async (req, res) => {
-	return res.send("Option 3");
+	// return res.send("Option 3");
 	const { question, answer } = req.body.query;
 	console.log("Hit GPT", req.body.context, question, answer);
 	let options = ""; // Assuming prompt is initialized earlier in your code
@@ -464,9 +525,6 @@ const generateQuestion = async (req, res) => {
 		},
 	];
 
-	console.log(process.env.AZURE_OPENAI_MODEL);
-	console.log(process.env.AZURE_OPENAI_KEY);
-	console.log(process.env.AZURE_OPENAI_ENDPOINT);
 	try {
 		const { choices } = await client.getChatCompletions(
 			process.env.AZURE_OPENAI_MODEL,
@@ -496,4 +554,5 @@ module.exports = {
 	askGPT,
 	askGPTLive,
 	generateQuestion,
+	askMulipleQuestions,
 };

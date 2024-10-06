@@ -141,7 +141,8 @@ const getNewQueries = async () => {
 		LEFT JOIN new_evaluations E
 		ON DS.id = E.query_id
 		LEFT JOIN models M
-		ON E.model_id = M.id
+		ON E.model_id = M.id AND M.hidden = false
+		WHERE deleted = false
 		GROUP BY DS.id
 		ORDER BY id DESC
 	`;
@@ -184,7 +185,11 @@ const deleteQuery = async (id) => {
 };
 
 const deleteNewQuery = async (id) => {
-	const query = "DELETE FROM new_dataset WHERE id = $1";
+	const query = `
+		UPDATE new_dataset
+		SET deleted = true
+		WHERE id = $1
+	`;
 	const params = [id];
 	const result = await base.query(query, params);
 	return result;

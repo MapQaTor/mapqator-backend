@@ -19,6 +19,25 @@ const insertResult = async (req, res) => {
 	}
 };
 
+const insertNewResult = async (req, res) => {
+	try {
+		let list = req.body;
+		// console.log(req.body);
+		// list = JSON.parse(list);
+		const result = await evaluationRepository.insertNewResult(list);
+		if (result.success) {
+			res.status(200).json({
+				message: "Result inserted successfully",
+			});
+		} else {
+			res.status(400).json({ error: "Can't insert result" });
+		}
+	} catch (error) {
+		console.log(error.message);
+		res.status(500).json({ error: error.message });
+	}
+};
+
 const insertNewResultByQuery = async (req, res) => {
 	try {
 		let { model_id, responses } = req.body;
@@ -83,6 +102,7 @@ const getResultsByModel = async (req, res) => {
 
 module.exports = {
 	insertResult,
+	insertNewResult,
 	getAllResults,
 	getResultsByQuery,
 	getResultsByModel,
