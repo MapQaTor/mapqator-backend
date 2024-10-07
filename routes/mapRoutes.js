@@ -41,5 +41,6 @@ router.post("/search/new", mapController.searchTextNew);
 router.post("/nearby/new", mapController.searchNearbyNew);
 router.post("/directions/new", mapController.computeRoutes);
 router.post("/distance/new", mapController.computeRouteMatrix);
+router.post("/search/along-route", mapController.searchAlongRoute);
 
 module.exports = router;

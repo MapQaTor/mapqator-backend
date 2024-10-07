@@ -262,14 +262,18 @@ const computeRoutes = async (req, res) => {
 							? undefined
 							: "TRAFFIC_UNAWARE",
 					computeAlternativeRoutes:
-						req.body.intermediates.length === 0,
+						req.body.intermediates.length === 0
+							? req.body.computeAlternativeRoutes === undefined
+								? true
+								: req.body.computeAlternativeRoutes
+							: false,
 				},
 				{
 					headers: {
 						"Content-Type": "application/json",
 						"X-Goog-Api-Key": key,
 						"X-Goog-FieldMask":
-							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline",
+							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline,routes.polyline",
 					},
 				}
 			);
@@ -603,6 +607,51 @@ const searchNearbyNew = async (req, res) => {
 			req.body.rankPreference,
 			places
 		);
+	} catch (error) {
+		// Handle any errors here
+		res.status(400).send({ error: "An error occurred" });
+		console.error(error);
+	}
+};
+
+const searchAlongRoute = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+	try {
+		const response = await axios.post(
+			"https://places.googleapis.com/v1/places:searchText",
+			{
+				textQuery:
+					req.body.searchBy === "type"
+						? req.body.type
+						: req.body.keyword,
+				rankPreference: req.body.rankPreference || "RELEVANCE", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
+				includedType:
+					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
+				minRating: req.body.minRating,
+				priceLevels: req.body.priceLevels,
+				maxResultCount: req.body.maxResultCount || 5,
+				strictTypeFiltering: true,
+				searchAlongRouteParameters: {
+					polyline: {
+						encodedPolyline: req.body.encodedPolyline,
+					},
+				},
+				languageCode: "en",
+			},
+			{
+				headers: {
+					"Content-Type": "application/json",
+					"X-Goog-Api-Key": key,
+					"X-Goog-FieldMask":
+						"places.id,places.displayName,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location",
+				},
+			}
+		);
+
+		// Handle the response data here
+		console.log(response.data);
+		res.status(200).send(response.data);
+		// const places = JSON.parse(JSON.stringify(response.data.places));
 	} catch (error) {
 		// Handle any errors here
 		res.status(400).send({ error: "An error occurred" });
@@ -1065,7 +1114,7 @@ const searchTextNew = async (req, res) => {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
 					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location",
+						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location,places	.viewport",
 				},
 			}
 		);
@@ -1198,4 +1247,5 @@ module.exports = {
 	searchLocalInside,
 	computeRoutes,
 	computeRouteMatrix,
+	searchAlongRoute,
 };
