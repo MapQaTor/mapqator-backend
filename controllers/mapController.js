@@ -1114,7 +1114,7 @@ const searchTextNew = async (req, res) => {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
 					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location,places	.viewport",
+						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location,places.viewport",
 				},
 			}
 		);
