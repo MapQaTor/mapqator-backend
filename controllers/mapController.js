@@ -189,28 +189,22 @@ const computeRoutes = async (req, res) => {
 		req.body.optimizeWaypointOrder,
 		req.body.transitPreferences
 	);
-	if (local.success && local.data.length > 0) {
-		console.log(local.data[0].routes);
-		const all_routes = [];
-		local.data[0].routes.forEach((route) => {
-			all_routes.push({
-				description: route.label,
-				localizedValues: {
-					staticDuration: {
-						text: route.duration,
-					},
-					distance: {
-						text: route.distance,
-					},
-				},
-				legs: route.legs,
-				optimizedIntermediateWaypointIndex:
-					route.optimizedIntermediateWaypointIndex,
-			});
-		});
-		return res.status(200).send({ routes: all_routes, status: "LOCAL" });
-	} // if (local.success && local.data.length > 0) {
-	else if (key) {
+	// if (local.success && local.data.length > 0) {
+	// 	console.log(local.data[0].routes);
+	// 	const all_routes = [];
+	// 	local.data[0].routes.forEach((route) => {
+	// 		all_routes.push({
+	// 			description: route.description,
+	// 			localizedValues: route.localizedValues,
+	// 			legs: route.legs,
+	// 			optimizedIntermediateWaypointIndex:
+	// 				route.optimizedIntermediateWaypointIndex,
+	// 		});
+	// 	});
+	// 	return res.status(200).send({ routes: all_routes, status: "LOCAL" });
+	// } // if (local.success && local.data.length > 0) {
+	// else
+	if (key) {
 		try {
 			const response = await axios.post(
 				"https://routes.googleapis.com/directions/v2:computeRoutes",
@@ -275,7 +269,7 @@ const computeRoutes = async (req, res) => {
 						"Content-Type": "application/json",
 						"X-Goog-Api-Key": key,
 						"X-Goog-FieldMask":
-							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues",
+							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline",
 					},
 				}
 			);
@@ -284,9 +278,10 @@ const computeRoutes = async (req, res) => {
 			const all_routes = [];
 			response.data.routes.forEach((route) => {
 				all_routes.push({
-					label: route.description,
-					duration: route.localizedValues.staticDuration.text,
-					distance: route.localizedValues.distance.text,
+					description: route.description,
+					localizedValues: route.localizedValues,
+					// duration: route.localizedValues.staticDuration.text,
+					// distance: route.localizedValues.distance.text,
 					legs: route.legs,
 					optimizedIntermediateWaypointIndex:
 						route.optimizedIntermediateWaypointIndex,
@@ -890,37 +885,38 @@ const getDetailsNew = async (req, res) => {
 		console.log(details);
 		const result = await placeRepository.createPlaceNew(details);
 		const filteredResult = filterNullAttributes(result.data[0]);
-		res.status(200).send({
-			id: filteredResult.id,
-			location: filteredResult.location,
-			shortFormattedAddress: filteredResult.shortFormattedAddress,
-			accessibilityOptions: filteredResult.accessibilityOptions,
-			displayName: filteredResult.displayName,
-			internationalPhoneNumber: filteredResult.internationalPhoneNumber,
-			priceLevel: filteredResult.priceLevel,
-			businessStatus: filteredResult.businessStatus,
-			rating: filteredResult.rating,
-			regularOpeningHours: filteredResult.regularOpeningHours,
-			userRatingCount: filteredResult.userRatingCount,
-			allowsDogs: filteredResult.allowsDogs,
-			delivery: filteredResult.delivery,
-			dineIn: filteredResult.dineIn,
-			paymentOptions: filteredResult.paymentOptions,
-			outdoorSeating: filteredResult.outdoorSeating,
-			reservable: filteredResult.reservable,
-			restroom: filteredResult.restroom,
-			servesBeer: filteredResult.servesBeer,
-			servesBreakfast: filteredResult.servesBreakfast,
-			servesBrunch: filteredResult.servesBrunch,
-			servesCocktails: filteredResult.servesCocktails,
-			servesCoffee: filteredResult.servesCoffee,
-			servesDessert: filteredResult.servesDessert,
-			servesDinner: filteredResult.servesDinner,
-			servesLunch: filteredResult.servesLunch,
-			servesVegetarianFood: filteredResult.servesVegetarianFood,
-			servesWine: filteredResult.servesWine,
-			takeout: filteredResult.takeout,
-		});
+		res.status(200).send(filteredResult);
+		// res.status(200).send({
+		// 	id: filteredResult.id,
+		// 	location: filteredResult.location,
+		// 	shortFormattedAddress: filteredResult.shortFormattedAddress,
+		// 	accessibilityOptions: filteredResult.accessibilityOptions,
+		// 	displayName: filteredResult.displayName,
+		// 	internationalPhoneNumber: filteredResult.internationalPhoneNumber,
+		// 	priceLevel: filteredResult.priceLevel,
+		// 	businessStatus: filteredResult.businessStatus,
+		// 	rating: filteredResult.rating,
+		// 	regularOpeningHours: filteredResult.regularOpeningHours,
+		// 	userRatingCount: filteredResult.userRatingCount,
+		// 	allowsDogs: filteredResult.allowsDogs,
+		// 	delivery: filteredResult.delivery,
+		// 	dineIn: filteredResult.dineIn,
+		// 	paymentOptions: filteredResult.paymentOptions,
+		// 	outdoorSeating: filteredResult.outdoorSeating,
+		// 	reservable: filteredResult.reservable,
+		// 	restroom: filteredResult.restroom,
+		// 	servesBeer: filteredResult.servesBeer,
+		// 	servesBreakfast: filteredResult.servesBreakfast,
+		// 	servesBrunch: filteredResult.servesBrunch,
+		// 	servesCocktails: filteredResult.servesCocktails,
+		// 	servesCoffee: filteredResult.servesCoffee,
+		// 	servesDessert: filteredResult.servesDessert,
+		// 	servesDinner: filteredResult.servesDinner,
+		// 	servesLunch: filteredResult.servesLunch,
+		// 	servesVegetarianFood: filteredResult.servesVegetarianFood,
+		// 	servesWine: filteredResult.servesWine,
+		// 	takeout: filteredResult.takeout,
+		// });
 	} catch (error) {
 		console.error(error.message);
 		res.status(400).send({ error: "An error occurred" });
