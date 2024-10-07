@@ -580,21 +580,21 @@ const searchNearbyNew = async (req, res) => {
 		res.status(200).send(response.data);
 		const places = JSON.parse(JSON.stringify(response.data.places));
 
-		for (const place of places) {
-			console.log(
-				place.displayName.text,
-				geometry.computeDistanceBetween(
-					{
-						lat: req.body.lat,
-						lng: req.body.lng,
-					},
-					{
-						lat: place.location.latitude,
-						lng: place.location.longitude,
-					}
-				)
-			);
-		}
+		// for (const place of places) {
+		// 	console.log(
+		// 		place.displayName.text,
+		// 		geometry.computeDistanceBetween(
+		// 			{
+		// 				lat: req.body.lat,
+		// 				lng: req.body.lng,
+		// 			},
+		// 			{
+		// 				lat: place.location.latitude,
+		// 				lng: place.location.longitude,
+		// 			}
+		// 		)
+		// 	);
+		// }
 		mapRepository.addNearbyNew(
 			req.body.locationBias,
 			req.body.searchBy === "type" ? req.body.type : req.body.keyword,
@@ -1065,7 +1065,7 @@ const searchTextNew = async (req, res) => {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
 					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress",
+						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location",
 				},
 			}
 		);
