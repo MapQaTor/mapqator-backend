@@ -617,6 +617,60 @@ const searchNearbyNew = async (req, res) => {
 const searchAlongRoute = async (req, res) => {
 	const key = req.header("google_maps_api_key");
 	try {
+		const response1 = await axios.post(
+			"https://routes.googleapis.com/directions/v2:computeRoutes",
+			{
+				origin: {
+					placeId: req.body.origin,
+				},
+				destination: {
+					placeId: req.body.destination,
+				},
+				travelMode: req.body.travelMode,
+				intermediates: undefined,
+				routeModifiers: {
+					avoidTolls: ["DRIVE", "TWO_WHEELER"].includes(
+						req.body.travelMode
+					)
+						? req.body.routeModifiers.avoidTolls
+						: false,
+					avoidHighways: ["DRIVE", "TWO_WHEELER"].includes(
+						req.body.travelMode
+					)
+						? req.body.routeModifiers.avoidHighways
+						: false,
+					avoidFerries: ["DRIVE", "TWO_WHEELER"].includes(
+						req.body.travelMode
+					)
+						? req.body.routeModifiers.avoidFerries
+						: false,
+					avoidIndoor: false,
+				},
+				transitPreferences: undefined,
+				optimizeWaypointOrder: false,
+				extraComputations:
+					req.body.travelMode === "TRANSIT"
+						? []
+						: ["HTML_FORMATTED_NAVIGATION_INSTRUCTIONS"],
+				units: "METRIC",
+				languageCode: "en",
+				routingPreference:
+					req.body.travelMode === "WALK" ||
+					req.body.travelMode === "BICYCLE" ||
+					req.body.travelMode === "TRANSIT"
+						? undefined
+						: "TRAFFIC_UNAWARE",
+				computeAlternativeRoutes: false,
+			},
+			{
+				headers: {
+					"Content-Type": "application/json",
+					"X-Goog-Api-Key": key,
+					"X-Goog-FieldMask":
+						"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline,routes.polyline",
+				},
+			}
+		);
 		const response = await axios.post(
 			"https://places.googleapis.com/v1/places:searchText",
 			{
@@ -633,7 +687,8 @@ const searchAlongRoute = async (req, res) => {
 				strictTypeFiltering: true,
 				searchAlongRouteParameters: {
 					polyline: {
-						encodedPolyline: req.body.encodedPolyline,
+						encodedPolyline:
+							response1.data.routes[0].polyline.encodedPolyline,
 					},
 				},
 				languageCode: "en",
@@ -650,7 +705,10 @@ const searchAlongRoute = async (req, res) => {
 
 		// Handle the response data here
 		console.log(response.data);
-		res.status(200).send(response.data);
+		res.status(200).send({
+			route_response: response1.data,
+			nearby_response: response.data,
+		});
 		// const places = JSON.parse(JSON.stringify(response.data.places));
 	} catch (error) {
 		// Handle any errors here
