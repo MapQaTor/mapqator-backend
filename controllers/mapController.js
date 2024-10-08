@@ -606,14 +606,14 @@ const searchNearbyNew = async (req, res) => {
 		// 		)
 		// 	);
 		// }
-		mapRepository.addNearbyNew(
-			req.body.locationBias,
-			req.body.searchBy === "type" ? req.body.type : req.body.keyword,
-			req.body.minRating,
-			req.body.priceLevels,
-			req.body.rankPreference,
-			places
-		);
+		// mapRepository.addNearbyNew(
+		// 	req.body.locationBias,
+		// 	req.body.searchBy === "type" ? req.body.type : req.body.keyword,
+		// 	req.body.minRating,
+		// 	req.body.priceLevels,
+		// 	req.body.rankPreference,
+		// 	places
+		// );
 	} catch (error) {
 		// Handle any errors here
 		res.status(400).send({ error: "An error occurred" });
