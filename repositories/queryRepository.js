@@ -19,7 +19,7 @@ const createQuery = async (record, username) => {
 
 const createNewQuery = async (record, username) => {
 	const query =
-		"INSERT INTO new_dataset (name, context, context_json, context_gpt, questions , username) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *";
+		"INSERT INTO new_dataset (name, context, context_json, context_gpt, questions , username, api_call_logs) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *";
 	const params = [
 		record.name,
 		record.context,
@@ -27,6 +27,7 @@ const createNewQuery = async (record, username) => {
 		record.context_gpt,
 		record.questions,
 		username,
+		record.api_call_logs,
 	];
 	const result = await base.query(query, params);
 	return result;
@@ -71,7 +72,7 @@ const updateNewQuery = async (id, record) => {
 	// await evaluationRepository.deleteNewEvaluationByQuery(id);
 	const query = `
 		UPDATE new_dataset
-		SET name = $1, context = $2, context_json = $3, context_gpt = $4, questions = $5
+		SET name = $1, context = $2, context_json = $3, context_gpt = $4, questions = $5, api_call_logs = $7
 		WHERE id = $6
 		RETURNING *
 	`;
@@ -82,6 +83,7 @@ const updateNewQuery = async (id, record) => {
 		record.context_gpt,
 		record.questions,
 		id,
+		record.api_call_logs,
 	];
 	const result = await base.query(query, params);
 	return result;

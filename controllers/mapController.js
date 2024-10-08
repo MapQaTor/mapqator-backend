@@ -176,142 +176,6 @@ const getLocalDirections = async (req, res) => {
 // 	avoidIndoor: false,
 // },
 
-// https://developers.google.com/maps/documentation/routes/transit-route
-const computeRoutes = async (req, res) => {
-	const key = req.header("google_maps_api_key");
-
-	const local = await mapRepository.getNewDirections(
-		req.body.origin,
-		req.body.destination,
-		req.body.intermediates,
-		req.body.travelMode,
-		req.body.routeModifiers,
-		req.body.optimizeWaypointOrder,
-		req.body.transitPreferences
-	);
-	// if (local.success && local.data.length > 0) {
-	// 	console.log(local.data[0].routes);
-	// 	const all_routes = [];
-	// 	local.data[0].routes.forEach((route) => {
-	// 		all_routes.push({
-	// 			description: route.description,
-	// 			localizedValues: route.localizedValues,
-	// 			legs: route.legs,
-	// 			optimizedIntermediateWaypointIndex:
-	// 				route.optimizedIntermediateWaypointIndex,
-	// 		});
-	// 	});
-	// 	return res.status(200).send({ routes: all_routes, status: "LOCAL" });
-	// } // if (local.success && local.data.length > 0) {
-	// else
-	if (key) {
-		try {
-			const response = await axios.post(
-				"https://routes.googleapis.com/directions/v2:computeRoutes",
-				{
-					origin: {
-						placeId: req.body.origin,
-					},
-					destination: {
-						placeId: req.body.destination,
-					},
-					travelMode: req.body.travelMode,
-					intermediates:
-						req.body.travelMode !== "TRANSIT"
-							? req.body.intermediates.map((intermediate) => ({
-									placeId: intermediate,
-							  }))
-							: undefined,
-					routeModifiers: {
-						avoidTolls: ["DRIVE", "TWO_WHEELER"].includes(
-							req.body.travelMode
-						)
-							? req.body.routeModifiers.avoidTolls
-							: false,
-						avoidHighways: ["DRIVE", "TWO_WHEELER"].includes(
-							req.body.travelMode
-						)
-							? req.body.routeModifiers.avoidHighways
-							: false,
-						avoidFerries: ["DRIVE", "TWO_WHEELER"].includes(
-							req.body.travelMode
-						)
-							? req.body.routeModifiers.avoidFerries
-							: false,
-						avoidIndoor: false,
-					},
-					transitPreferences:
-						req.body.travelMode === "TRANSIT"
-							? req.body.transitPreferences
-							: undefined,
-					optimizeWaypointOrder:
-						req.body.intermediates.length > 0 &&
-						req.body.travelMode !== "TRANSIT"
-							? req.body.optimizeWaypointOrder
-							: false,
-					extraComputations:
-						req.body.travelMode === "TRANSIT"
-							? []
-							: ["HTML_FORMATTED_NAVIGATION_INSTRUCTIONS"],
-					units: "METRIC",
-					languageCode: "en",
-					routingPreference:
-						req.body.travelMode === "WALK" ||
-						req.body.travelMode === "BICYCLE" ||
-						req.body.travelMode === "TRANSIT"
-							? undefined
-							: "TRAFFIC_UNAWARE",
-					computeAlternativeRoutes:
-						req.body.intermediates.length === 0
-							? req.body.computeAlternativeRoutes === undefined
-								? true
-								: req.body.computeAlternativeRoutes
-							: false,
-				},
-				{
-					headers: {
-						"Content-Type": "application/json",
-						"X-Goog-Api-Key": key,
-						"X-Goog-FieldMask":
-							"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline,routes.polyline",
-					},
-				}
-			);
-			res.status(200).send(response.data);
-
-			const all_routes = [];
-			response.data.routes.forEach((route) => {
-				all_routes.push({
-					description: route.description,
-					localizedValues: route.localizedValues,
-					// duration: route.localizedValues.staticDuration.text,
-					// distance: route.localizedValues.distance.text,
-					legs: route.legs,
-					optimizedIntermediateWaypointIndex:
-						route.optimizedIntermediateWaypointIndex,
-				});
-			});
-			mapRepository.addNewDirections(
-				req.body.origin,
-				req.body.destination,
-				req.body.intermediates,
-				req.body.travelMode,
-				req.body.routeModifiers,
-				req.body.optimizeWaypointOrder,
-				req.body.transitPreferences,
-				all_routes
-			);
-		} catch (error) {
-			res.status(400).send({ error: "An error occurred" });
-			console.error(error.message);
-		}
-	} else {
-		res.status(400).send({
-			error: "Can't find direction in the local database",
-		});
-	}
-};
-
 // https://developers.google.com/maps/documentation/routes/reference/rest/v2/TopLevel/computeRouteMatrix
 const computeRouteMatrix = async (req, res) => {
 	const key = req.header("google_maps_api_key");
@@ -520,207 +384,6 @@ const getCustomDirections = async (req, res) => {
 		res.status(400).send({
 			error: "Can't find direction in the local database",
 		});
-	}
-};
-
-// https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places/searchNearby
-const searchNearbyNew = async (req, res) => {
-	console.log("New Nearby", req.body);
-	const key = req.header("google_maps_api_key");
-	try {
-		const response = await axios.post(
-			// "https://places.googleapis.com/v1/places:searchNearby",
-			// {
-			// 	includedTypes: req.body.types,
-			// 	maxResultCount: req.body.maxResultCount,
-			// 	rankPreference: req.body.rankby, // POPULARITY/DISTANCE
-			// 	locationRestriction: {
-			// 		circle: {
-			// 			center: {
-			// 				latitude: req.body.lat,
-			// 				longitude: req.body.lng,
-			// 			},
-			// 			radius: req.body.radius,
-			// 		},
-			// 	},
-			// },
-			// type, minRating, priceLevels, rankPreference, locationBias
-			"https://places.googleapis.com/v1/places:searchText",
-			{
-				textQuery:
-					req.body.searchBy === "type"
-						? req.body.type
-						: req.body.keyword,
-				rankPreference: req.body.rankPreference || "RELEVANCE", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
-				includedType:
-					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
-				minRating: req.body.minRating,
-				priceLevels: req.body.priceLevels,
-				maxResultCount: req.body.maxResultCount || 5,
-				strictTypeFiltering: true,
-				locationBias: {
-					circle: {
-						center: {
-							latitude: req.body.lat,
-							longitude: req.body.lng,
-						},
-						radius: 0,
-					},
-				},
-				languageCode: "en",
-				routingParameters: {
-					origin: {
-						latitude: req.body.lat,
-						longitude: req.body.lng,
-					},
-					travelMode: "WALK",
-				},
-			},
-			{
-				headers: {
-					"Content-Type": "application/json",
-					"X-Goog-Api-Key": key,
-					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location,routingSummaries",
-				},
-			}
-		);
-
-		// Handle the response data here
-		console.log(response.data);
-		res.status(200).send(response.data);
-		const places = JSON.parse(JSON.stringify(response.data.places));
-
-		// for (const place of places) {
-		// 	console.log(
-		// 		place.displayName.text,
-		// 		geometry.computeDistanceBetween(
-		// 			{
-		// 				lat: req.body.lat,
-		// 				lng: req.body.lng,
-		// 			},
-		// 			{
-		// 				lat: place.location.latitude,
-		// 				lng: place.location.longitude,
-		// 			}
-		// 		)
-		// 	);
-		// }
-		// mapRepository.addNearbyNew(
-		// 	req.body.locationBias,
-		// 	req.body.searchBy === "type" ? req.body.type : req.body.keyword,
-		// 	req.body.minRating,
-		// 	req.body.priceLevels,
-		// 	req.body.rankPreference,
-		// 	places
-		// );
-	} catch (error) {
-		// Handle any errors here
-		res.status(400).send({ error: "An error occurred" });
-		console.error(error);
-	}
-};
-
-const searchAlongRoute = async (req, res) => {
-	const key = req.header("google_maps_api_key");
-	try {
-		const response1 = await axios.post(
-			"https://routes.googleapis.com/directions/v2:computeRoutes",
-			{
-				origin: {
-					placeId: req.body.origin,
-				},
-				destination: {
-					placeId: req.body.destination,
-				},
-				travelMode: req.body.travelMode,
-				intermediates: undefined,
-				routeModifiers: {
-					avoidTolls: ["DRIVE", "TWO_WHEELER"].includes(
-						req.body.travelMode
-					)
-						? req.body.routeModifiers.avoidTolls
-						: false,
-					avoidHighways: ["DRIVE", "TWO_WHEELER"].includes(
-						req.body.travelMode
-					)
-						? req.body.routeModifiers.avoidHighways
-						: false,
-					avoidFerries: ["DRIVE", "TWO_WHEELER"].includes(
-						req.body.travelMode
-					)
-						? req.body.routeModifiers.avoidFerries
-						: false,
-					avoidIndoor: false,
-				},
-				transitPreferences: undefined,
-				optimizeWaypointOrder: false,
-				extraComputations:
-					req.body.travelMode === "TRANSIT"
-						? []
-						: ["HTML_FORMATTED_NAVIGATION_INSTRUCTIONS"],
-				units: "METRIC",
-				languageCode: "en",
-				routingPreference:
-					req.body.travelMode === "WALK" ||
-					req.body.travelMode === "BICYCLE" ||
-					req.body.travelMode === "TRANSIT"
-						? undefined
-						: "TRAFFIC_UNAWARE",
-				computeAlternativeRoutes: false,
-			},
-			{
-				headers: {
-					"Content-Type": "application/json",
-					"X-Goog-Api-Key": key,
-					"X-Goog-FieldMask":
-						"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline,routes.polyline",
-				},
-			}
-		);
-		const response = await axios.post(
-			"https://places.googleapis.com/v1/places:searchText",
-			{
-				textQuery:
-					req.body.searchBy === "type"
-						? req.body.type
-						: req.body.keyword,
-				rankPreference: req.body.rankPreference || "RELEVANCE", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
-				includedType:
-					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
-				minRating: req.body.minRating,
-				priceLevels: req.body.priceLevels,
-				maxResultCount: req.body.maxResultCount || 5,
-				strictTypeFiltering: true,
-				searchAlongRouteParameters: {
-					polyline: {
-						encodedPolyline:
-							response1.data.routes[0].polyline.encodedPolyline,
-					},
-				},
-				languageCode: "en",
-			},
-			{
-				headers: {
-					"Content-Type": "application/json",
-					"X-Goog-Api-Key": key,
-					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location",
-				},
-			}
-		);
-
-		// Handle the response data here
-		console.log(response.data);
-		res.status(200).send({
-			route_response: response1.data,
-			nearby_response: response.data,
-		});
-		// const places = JSON.parse(JSON.stringify(response.data.places));
-	} catch (error) {
-		// Handle any errors here
-		res.status(400).send({ error: "An error occurred" });
-		console.error(error);
 	}
 };
 
@@ -978,65 +641,6 @@ const filterNullAttributes = (obj) => {
 	);
 };
 
-const getDetailsNew = async (req, res) => {
-	const key = req.header("google_maps_api_key");
-	try {
-		console.log("Fetch:", req.params.id);
-		const response = await axios.get(
-			"https://places.googleapis.com/v1/places/" + req.params.id,
-			{
-				headers: {
-					"Content-Type": "application/json",
-					"X-Goog-Api-Key": key,
-					"X-Goog-FieldMask":
-						"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary,reviews",
-					// "X-Goog-FieldMask":
-					// 	"id,location,plusCode,shortFormattedAddress,accessibilityOptions,businessStatus,displayName,googleMapsUri,primaryType,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout",
-				},
-			}
-		);
-		const details = JSON.parse(JSON.stringify(response.data));
-		console.log(details);
-		const result = await placeRepository.createPlaceNew(details);
-		const filteredResult = filterNullAttributes(result.data[0]);
-		res.status(200).send(filteredResult);
-		// res.status(200).send({
-		// 	id: filteredResult.id,
-		// 	location: filteredResult.location,
-		// 	shortFormattedAddress: filteredResult.shortFormattedAddress,
-		// 	accessibilityOptions: filteredResult.accessibilityOptions,
-		// 	displayName: filteredResult.displayName,
-		// 	internationalPhoneNumber: filteredResult.internationalPhoneNumber,
-		// 	priceLevel: filteredResult.priceLevel,
-		// 	businessStatus: filteredResult.businessStatus,
-		// 	rating: filteredResult.rating,
-		// 	regularOpeningHours: filteredResult.regularOpeningHours,
-		// 	userRatingCount: filteredResult.userRatingCount,
-		// 	allowsDogs: filteredResult.allowsDogs,
-		// 	delivery: filteredResult.delivery,
-		// 	dineIn: filteredResult.dineIn,
-		// 	paymentOptions: filteredResult.paymentOptions,
-		// 	outdoorSeating: filteredResult.outdoorSeating,
-		// 	reservable: filteredResult.reservable,
-		// 	restroom: filteredResult.restroom,
-		// 	servesBeer: filteredResult.servesBeer,
-		// 	servesBreakfast: filteredResult.servesBreakfast,
-		// 	servesBrunch: filteredResult.servesBrunch,
-		// 	servesCocktails: filteredResult.servesCocktails,
-		// 	servesCoffee: filteredResult.servesCoffee,
-		// 	servesDessert: filteredResult.servesDessert,
-		// 	servesDinner: filteredResult.servesDinner,
-		// 	servesLunch: filteredResult.servesLunch,
-		// 	servesVegetarianFood: filteredResult.servesVegetarianFood,
-		// 	servesWine: filteredResult.servesWine,
-		// 	takeout: filteredResult.takeout,
-		// });
-	} catch (error) {
-		console.error(error.message);
-		res.status(400).send({ error: "An error occurred" });
-	}
-};
-
 const getLocalDetails = async (req, res) => {
 	const local = await placeRepository.getPlaceByName(req.params.name);
 	if (local.success && local.data.length > 0) {
@@ -1158,43 +762,6 @@ const getDetailsCustom = async (req, res) => {
 	}
 };
 
-// Types: https://developers.google.com/maps/documentation/places/web-service/place-types
-// https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places/searchText
-const searchTextNew = async (req, res) => {
-	const key = req.header("google_maps_api_key");
-	try {
-		console.log("Body", req.body);
-		if (!req.body.query)
-			return res.status(400).send({ error: "Query is required" });
-		const response = await axios.post(
-			"https://places.googleapis.com/v1/places:searchText",
-			{
-				textQuery: req.body.query,
-				// rankPreference: req.query.rankby , // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
-				// For a categorical query such as "Restaurants in New York City", RELEVANCE is the default. For non-categorical queries such as "Mountain View, CA" we recommend that you leave rankPreference unset.
-				maxResultCount: req.body.maxResultCount || 5,
-			},
-			{
-				headers: {
-					"Content-Type": "application/json",
-					"X-Goog-Api-Key": key,
-					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location,places.viewport",
-				},
-			}
-		);
-		console.log(response.data);
-		res.send(response.data);
-		const places = JSON.parse(JSON.stringify(response.data.places));
-		for (const place of places) {
-			placeRepository.createPlaceNew(place);
-		}
-	} catch (error) {
-		res.status(400).send({ error: "An error occurred" });
-		console.error(error);
-	}
-};
-
 const searchText = async (req, res) => {
 	const key = req.header("google_maps_api_key");
 	if (key) {
@@ -1288,6 +855,536 @@ const searchLocalInside = async (req, res) => {
 			.send({ results: local.data[0].places, status: "LOCAL" });
 	} else {
 		return res.status(400).send({ error: "An error occurred" });
+	}
+};
+
+// Types: https://developers.google.com/maps/documentation/places/web-service/place-types
+// https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places/searchText
+const searchTextNew = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+	try {
+		console.log("Body", req.body);
+		if (!req.body.query)
+			return res.status(400).send({ error: "Query is required" });
+
+		const apiCall = {
+			url: "https://places.googleapis.com/v1/places:searchText",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Goog-FieldMask":
+					"places.id,places.displayName,places.shortFormattedAddress,places.formattedAddress,places.location,places.viewport",
+			},
+			body: {
+				textQuery: req.body.query,
+				maxResultCount: req.body.maxResultCount || 5,
+			},
+		};
+		const response = await axios.post(apiCall.url, apiCall.body, {
+			headers: {
+				...apiCall.headers,
+				"X-Goog-Api-Key": key,
+			},
+		});
+
+		const epochId = Date.now();
+		res.send({
+			result: response.data,
+			apiCallLogs: [
+				{
+					...apiCall,
+					uuid: epochId,
+					result: JSON.parse(JSON.stringify(response.data)),
+				},
+			],
+			uuid: epochId,
+		});
+		const places = JSON.parse(JSON.stringify(response.data.places));
+		for (const place of places) {
+			placeRepository.createPlaceNew(place);
+		}
+	} catch (error) {
+		res.status(400).send({ error: "An error occurred" });
+		console.error(error);
+	}
+};
+
+const getDetailsNew = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+	try {
+		console.log("Fetch:", req.params.id);
+		const apiCall = {
+			url: "https://places.googleapis.com/v1/places/" + req.params.id,
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				// "X-Goog-FieldMask":
+				// 	"id,name,photos,addressComponents,adrFormatAddress,formattedAddress,location,plusCode,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,iconBackgroundColor,iconMaskBaseUri,primaryType,primaryTypeDisplayName,subDestinations,utcOffsetMinutes,currentOpeningHours,currentSecondaryOpeningHours,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours.weekdayDescriptions,regularSecondaryOpeningHours,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,editorialSummary,evChargeOptions,fuelOptions,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,parkingOptions,paymentOptions,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout,generativeSummary,areaSummary,reviews",
+				"X-Goog-FieldMask":
+					"id,addressComponents,adrFormatAddress,formattedAddress,location,shortFormattedAddress,types,viewport,accessibilityOptions,businessStatus,displayName,googleMapsUri,primaryType,primaryTypeDisplayName,internationalPhoneNumber,nationalPhoneNumber,priceLevel,rating,regularOpeningHours.weekdayDescriptions,userRatingCount,websiteUri,allowsDogs,curbsidePickup,delivery,dineIn,goodForChildren,goodForGroups,goodForWatchingSports,liveMusic,menuForChildren,outdoorSeating,reservable,restroom,servesBeer,servesBreakfast,servesBrunch,servesCocktails,servesCoffee,servesDessert,servesDinner,servesLunch,servesVegetarianFood,servesWine,takeout",
+			},
+		};
+
+		const response = await axios.get(apiCall.url, {
+			headers: {
+				...apiCall.headers,
+				"X-Goog-Api-Key": key,
+			},
+		});
+		const details = JSON.parse(JSON.stringify(response.data));
+		const result = await placeRepository.createPlaceNew(details);
+		const filteredResult = filterNullAttributes(result.data[0]);
+
+		const epochId = Date.now();
+		res.status(200).send({
+			result: filteredResult,
+			apiCallLogs: [
+				{
+					...apiCall,
+					uuid: epochId,
+					result: JSON.parse(JSON.stringify(response.data)),
+				},
+			],
+			uuid: epochId,
+		});
+		// res.status(200).send({
+		// 	uuid: filteredResult.id,
+		// 	location: filteredResult.location,
+		// 	shortFormattedAddress: filteredResult.shortFormattedAddress,
+		// 	accessibilityOptions: filteredResult.accessibilityOptions,
+		// 	displayName: filteredResult.displayName,
+		// 	internationalPhoneNumber: filteredResult.internationalPhoneNumber,
+		// 	priceLevel: filteredResult.priceLevel,
+		// 	businessStatus: filteredResult.businessStatus,
+		// 	rating: filteredResult.rating,
+		// 	regularOpeningHours: filteredResult.regularOpeningHours,
+		// 	userRatingCount: filteredResult.userRatingCount,
+		// 	allowsDogs: filteredResult.allowsDogs,
+		// 	delivery: filteredResult.delivery,
+		// 	dineIn: filteredResult.dineIn,
+		// 	paymentOptions: filteredResult.paymentOptions,
+		// 	outdoorSeating: filteredResult.outdoorSeating,
+		// 	reservable: filteredResult.reservable,
+		// 	restroom: filteredResult.restroom,
+		// 	servesBeer: filteredResult.servesBeer,
+		// 	servesBreakfast: filteredResult.servesBreakfast,
+		// 	servesBrunch: filteredResult.servesBrunch,
+		// 	servesCocktails: filteredResult.servesCocktails,
+		// 	servesCoffee: filteredResult.servesCoffee,
+		// 	servesDessert: filteredResult.servesDessert,
+		// 	servesDinner: filteredResult.servesDinner,
+		// 	servesLunch: filteredResult.servesLunch,
+		// 	servesVegetarianFood: filteredResult.servesVegetarianFood,
+		// 	servesWine: filteredResult.servesWine,
+		// 	takeout: filteredResult.takeout,
+		// });
+	} catch (error) {
+		console.error(error.message);
+		res.status(400).send({ error: "An error occurred" });
+	}
+};
+
+// https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places/searchNearby
+const searchNearbyNew = async (req, res) => {
+	console.log("New Nearby", req.body);
+	const key = req.header("google_maps_api_key");
+	try {
+		const apiCall = {
+			url: "https://places.googleapis.com/v1/places:searchText",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Goog-FieldMask":
+					"places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location,routingSummaries",
+			},
+			body: {
+				textQuery:
+					req.body.searchBy === "type"
+						? req.body.type
+						: req.body.keyword,
+				rankPreference: req.body.rankPreference || "RELEVANCE", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
+				includedType:
+					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
+				minRating: req.body.minRating,
+				priceLevels: req.body.priceLevels,
+				maxResultCount: req.body.maxResultCount || 5,
+				strictTypeFiltering: true,
+				locationBias: {
+					circle: {
+						center: {
+							latitude: req.body.lat,
+							longitude: req.body.lng,
+						},
+						radius: 0,
+					},
+				},
+				languageCode: "en",
+				routingParameters: {
+					origin: {
+						latitude: req.body.lat,
+						longitude: req.body.lng,
+					},
+					travelMode: "WALK",
+				},
+			},
+		};
+
+		console.log(apiCall.url, apiCall.body, {
+			headers: {
+				...apiCall.headers,
+				"X-Goog-Api-Key": key,
+			},
+		});
+		const response = await axios.post(
+			// "https://places.googleapis.com/v1/places:searchNearby",
+			// {
+			// 	includedTypes: req.body.types,
+			// 	maxResultCount: req.body.maxResultCount,
+			// 	rankPreference: req.body.rankby, // POPULARITY/DISTANCE
+			// 	locationRestriction: {
+			// 		circle: {
+			// 			center: {
+			// 				latitude: req.body.lat,
+			// 				longitude: req.body.lng,
+			// 			},
+			// 			radius: req.body.radius,
+			// 		},
+			// 	},
+			// },
+			// type, minRating, priceLevels, rankPreference, locationBias
+			apiCall.url,
+			apiCall.body,
+			{
+				headers: {
+					...apiCall.headers,
+					"X-Goog-Api-Key": key,
+				},
+			}
+		);
+
+		// Handle the response data here
+		console.log(response.data);
+		const epochId = Date.now();
+		res.status(200).send({
+			result: response.data,
+			apiCallLogs: [
+				{
+					...apiCall,
+					uuid: epochId,
+					result: JSON.parse(JSON.stringify(response.data)),
+				},
+			],
+			uuid: epochId,
+		});
+		const places = JSON.parse(JSON.stringify(response.data.places));
+
+		// for (const place of places) {
+		// 	console.log(
+		// 		place.displayName.text,
+		// 		geometry.computeDistanceBetween(
+		// 			{
+		// 				lat: req.body.lat,
+		// 				lng: req.body.lng,
+		// 			},
+		// 			{
+		// 				lat: place.location.latitude,
+		// 				lng: place.location.longitude,
+		// 			}
+		// 		)
+		// 	);
+		// }
+		// mapRepository.addNearbyNew(
+		// 	req.body.locationBias,
+		// 	req.body.searchBy === "type" ? req.body.type : req.body.keyword,
+		// 	req.body.minRating,
+		// 	req.body.priceLevels,
+		// 	req.body.rankPreference,
+		// 	places
+		// );
+	} catch (error) {
+		// Handle any errors here
+		res.status(400).send({ error: "An error occurred" });
+		console.error(error.response.data.error);
+	}
+};
+
+// https://developers.google.com/maps/documentation/routes/transit-route
+const computeRoutes = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+
+	const local = await mapRepository.getNewDirections(
+		req.body.origin,
+		req.body.destination,
+		req.body.intermediates,
+		req.body.travelMode,
+		req.body.routeModifiers,
+		req.body.optimizeWaypointOrder,
+		req.body.transitPreferences
+	);
+	// if (local.success && local.data.length > 0) {
+	// 	console.log(local.data[0].routes);
+	// 	const all_routes = [];
+	// 	local.data[0].routes.forEach((route) => {
+	// 		all_routes.push({
+	// 			description: route.description,
+	// 			localizedValues: route.localizedValues,
+	// 			legs: route.legs,
+	// 			optimizedIntermediateWaypointIndex:
+	// 				route.optimizedIntermediateWaypointIndex,
+	// 		});
+	// 	});
+	// 	return res.status(200).send({ routes: all_routes, status: "LOCAL" });
+	// } // if (local.success && local.data.length > 0) {
+	// else
+	if (key) {
+		try {
+			const apiCall = {
+				url: "https://routes.googleapis.com/directions/v2:computeRoutes",
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"X-Goog-FieldMask":
+						"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline,routes.polyline",
+				},
+				body: {
+					origin: {
+						placeId: req.body.origin,
+					},
+					destination: {
+						placeId: req.body.destination,
+					},
+					travelMode: req.body.travelMode,
+					intermediates:
+						req.body.travelMode !== "TRANSIT"
+							? req.body.intermediates.map((intermediate) => ({
+									placeId: intermediate,
+							  }))
+							: undefined,
+					routeModifiers: {
+						avoidTolls: ["DRIVE", "TWO_WHEELER"].includes(
+							req.body.travelMode
+						)
+							? req.body.routeModifiers.avoidTolls
+							: false,
+						avoidHighways: ["DRIVE", "TWO_WHEELER"].includes(
+							req.body.travelMode
+						)
+							? req.body.routeModifiers.avoidHighways
+							: false,
+						avoidFerries: ["DRIVE", "TWO_WHEELER"].includes(
+							req.body.travelMode
+						)
+							? req.body.routeModifiers.avoidFerries
+							: false,
+						avoidIndoor: false,
+					},
+					transitPreferences:
+						req.body.travelMode === "TRANSIT"
+							? req.body.transitPreferences
+							: undefined,
+					optimizeWaypointOrder:
+						req.body.intermediates.length > 0 &&
+						req.body.travelMode !== "TRANSIT"
+							? req.body.optimizeWaypointOrder
+							: false,
+					extraComputations:
+						req.body.travelMode === "TRANSIT"
+							? []
+							: ["HTML_FORMATTED_NAVIGATION_INSTRUCTIONS"],
+					units: "METRIC",
+					languageCode: "en",
+					routingPreference:
+						req.body.travelMode === "WALK" ||
+						req.body.travelMode === "BICYCLE" ||
+						req.body.travelMode === "TRANSIT"
+							? undefined
+							: "TRAFFIC_UNAWARE",
+					computeAlternativeRoutes:
+						req.body.intermediates.length === 0
+							? req.body.computeAlternativeRoutes === undefined
+								? true
+								: req.body.computeAlternativeRoutes
+							: false,
+				},
+			};
+
+			const response = await axios.post(apiCall.url, apiCall.body, {
+				headers: {
+					...apiCall.headers,
+					"X-Goog-Api-Key": key,
+				},
+			});
+
+			const epochId = Date.now();
+			res.status(200).send({
+				result: response.data,
+				apiCallLogs: [
+					{
+						...apiCall,
+						uuid: epochId,
+						result: JSON.parse(JSON.stringify(response.data)),
+					},
+				],
+				uuid: epochId,
+			});
+
+			const all_routes = [];
+			response.data.routes.forEach((route) => {
+				all_routes.push({
+					description: route.description,
+					localizedValues: route.localizedValues,
+					// duration: route.localizedValues.staticDuration.text,
+					// distance: route.localizedValues.distance.text,
+					legs: route.legs,
+					optimizedIntermediateWaypointIndex:
+						route.optimizedIntermediateWaypointIndex,
+				});
+			});
+			mapRepository.addNewDirections(
+				req.body.origin,
+				req.body.destination,
+				req.body.intermediates,
+				req.body.travelMode,
+				req.body.routeModifiers,
+				req.body.optimizeWaypointOrder,
+				req.body.transitPreferences,
+				all_routes
+			);
+		} catch (error) {
+			res.status(400).send({ error: "An error occurred" });
+			console.error(error.message);
+		}
+	} else {
+		res.status(400).send({
+			error: "Can't find direction in the local database",
+		});
+	}
+};
+
+const searchAlongRoute = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+	try {
+		const apiCall1 = {
+			url: "https://routes.googleapis.com/directions/v2:computeRoutes",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Goog-FieldMask":
+					"routes.distanceMeters,routes.staticDuration,routes.description,routes.localizedValues,routes.optimized_intermediate_waypoint_index,routes.legs.steps.navigationInstruction,routes.legs.steps.transitDetails,routes.legs.localizedValues,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.polyline,routes.polyline",
+			},
+			body: {
+				origin: {
+					placeId: req.body.origin,
+				},
+				destination: {
+					placeId: req.body.destination,
+				},
+				travelMode: req.body.travelMode,
+				intermediates: undefined,
+				routeModifiers: {
+					avoidTolls: ["DRIVE", "TWO_WHEELER"].includes(
+						req.body.travelMode
+					)
+						? req.body.routeModifiers.avoidTolls
+						: false,
+					avoidHighways: ["DRIVE", "TWO_WHEELER"].includes(
+						req.body.travelMode
+					)
+						? req.body.routeModifiers.avoidHighways
+						: false,
+					avoidFerries: ["DRIVE", "TWO_WHEELER"].includes(
+						req.body.travelMode
+					)
+						? req.body.routeModifiers.avoidFerries
+						: false,
+					avoidIndoor: false,
+				},
+				transitPreferences: undefined,
+				optimizeWaypointOrder: false,
+				extraComputations:
+					req.body.travelMode === "TRANSIT"
+						? []
+						: ["HTML_FORMATTED_NAVIGATION_INSTRUCTIONS"],
+				units: "METRIC",
+				languageCode: "en",
+				routingPreference:
+					req.body.travelMode === "WALK" ||
+					req.body.travelMode === "BICYCLE" ||
+					req.body.travelMode === "TRANSIT"
+						? undefined
+						: "TRAFFIC_UNAWARE",
+				computeAlternativeRoutes: false,
+			},
+		};
+
+		const response1 = await axios.post(apiCall1.url, apiCall1.body, {
+			headers: {
+				...apiCall1.headers,
+				"X-Goog-Api-Key": key,
+			},
+		});
+
+		const apiCall2 = {
+			url: "https://places.googleapis.com/v1/places:searchText",
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				"X-Goog-FieldMask":
+					"places.id,places.displayName,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location",
+			},
+			body: {
+				textQuery:
+					req.body.searchBy === "type"
+						? req.body.type
+						: req.body.keyword,
+				rankPreference: req.body.rankPreference || "RELEVANCE", // DISTANCE/RELEVANCE/RANK_PREFERENCE_UNSPECIFIED
+				includedType:
+					req.body.searchBy === "type" ? req.body.type : undefined, // One type only
+				minRating: req.body.minRating,
+				priceLevels: req.body.priceLevels,
+				maxResultCount: req.body.maxResultCount || 5,
+				strictTypeFiltering: true,
+				searchAlongRouteParameters: {
+					polyline: {
+						encodedPolyline:
+							response1.data.routes[0].polyline.encodedPolyline,
+					},
+				},
+				languageCode: "en",
+			},
+		};
+
+		const response = await axios.post(apiCall2.url, apiCall2.body, {
+			headers: {
+				...apiCall2.headers,
+				"X-Goog-Api-Key": key,
+			},
+		});
+
+		// Handle the response data here
+		const epochId = Date.now();
+		res.status(200).send({
+			route_response: response1.data,
+			nearby_response: response.data,
+			apiCallLogs: [
+				{
+					...apiCall1,
+					uuid: epochId,
+					result: JSON.parse(JSON.stringify(response1.data)),
+				},
+				{
+					...apiCall2,
+					uuid: epochId,
+					result: JSON.parse(JSON.stringify(response.data)),
+				},
+			],
+			uuid: epochId,
+		});
+		// const places = JSON.parse(JSON.stringify(response.data.places));
+	} catch (error) {
+		// Handle any errors here
+		res.status(400).send({ error: "An error occurred" });
+		console.error(error.response);
 	}
 };
 
