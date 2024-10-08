@@ -568,13 +568,20 @@ const searchNearbyNew = async (req, res) => {
 					},
 				},
 				languageCode: "en",
+				routingParameters: {
+					origin: {
+						latitude: req.body.lat,
+						longitude: req.body.lng,
+					},
+					travelMode: "WALK",
+				},
 			},
 			{
 				headers: {
 					"Content-Type": "application/json",
 					"X-Goog-Api-Key": key,
 					"X-Goog-FieldMask":
-						"places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location",
+						"places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.shortFormattedAddress,places.userRatingCount,places.location,routingSummaries",
 				},
 			}
 		);
