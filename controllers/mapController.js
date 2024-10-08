@@ -1076,7 +1076,7 @@ const searchNearbyNew = async (req, res) => {
 			],
 			uuid: epochId,
 		});
-		const places = JSON.parse(JSON.stringify(response.data.places));
+		// const places = JSON.parse(JSON.stringify(response.data.places));
 
 		// for (const place of places) {
 		// 	console.log(
