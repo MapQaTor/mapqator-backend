@@ -22,15 +22,19 @@ const call = async (url, method, headers, body, key) => {
 			headers: { ...headers, "X-Goog-Api-Key": key },
 			data: body,
 		});
-		apiCallRepository.set(
-			{
-				url,
-				method,
-				headers,
-				body,
-			},
-			response.data
-		);
+
+		if (response.data) {
+			apiCallRepository.set(
+				{
+					url,
+					method,
+					headers,
+					body,
+				},
+				response.data
+			);
+		}
+
 		return response;
 	} catch (error) {
 		console.error(error.response);
