@@ -1,4 +1,5 @@
 const mapController = require("../controllers/mapController");
+const newMapController = require("../controllers/newMapController");
 const {
 	authenticateJWT,
 	authenticateOrGuest,
@@ -36,11 +37,11 @@ router.get("/distance/custom", mapController.getDistanceCustom);
 router.get("/distance/local", mapController.getLocalDistance);
 
 // New API
-router.get("/details/new/:id", mapController.getDetailsNew);
-router.post("/search/new", mapController.searchTextNew);
-router.post("/nearby/new", mapController.searchNearbyNew);
-router.post("/directions/new", mapController.computeRoutes);
+router.get("/details/new/:id", newMapController.getDetailsNew);
+router.post("/search/new", newMapController.searchTextNew);
+router.post("/nearby/new", newMapController.searchNearbyNew);
+router.post("/directions/new", newMapController.computeRoutes);
 router.post("/distance/new", mapController.computeRouteMatrix);
-router.post("/search/along-route", mapController.searchAlongRoute);
+router.post("/search/along-route", newMapController.searchAlongRoute);
 
 module.exports = router;
