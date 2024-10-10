@@ -14,7 +14,7 @@ const call = async (url, method, headers, body, key) => {
 			body,
 		});
 		if (cachedResponse.data.length > 0) {
-			return cachedResponse.data[0].response;
+			return { data: cachedResponse.data[0].response };
 		}
 		const response = await axios({
 			url: url,
@@ -229,7 +229,7 @@ const searchNearbyNew = async (req, res) => {
 	} catch (error) {
 		// Handle any errors here
 		res.status(400).send({ error: "An error occurred" });
-		console.error(error.response.data.error);
+		console.error(error.response.data);
 	}
 };
 
