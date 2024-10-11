@@ -5,7 +5,7 @@ const apiCallRepository = require("../repositories/apiCallRepository");
 // https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places
 // https://developers.google.com/maps/documentation/places/web-service/data-fields
 
-const call = async (url, method, headers, body, key) => {
+const call2 = async (url, method, headers, body, key) => {
 	try {
 		const cachedResponse = await apiCallRepository.get({
 			url,
@@ -42,6 +42,81 @@ const call = async (url, method, headers, body, key) => {
 	}
 };
 
+const call = async (url, method, headers, body, params) => {
+	try {
+		const cachedResponse = await apiCallRepository.get({
+			url,
+			method,
+			headers,
+			body,
+		});
+		if (cachedResponse.data.length > 0) {
+			return { data: cachedResponse.data[0].response };
+		}
+		const response = await axios({
+			url: url,
+			method: method,
+			headers: headers,
+			data: body,
+			params: params,
+		});
+
+		if (response.data) {
+			apiCallRepository.set(
+				{
+					url,
+					method,
+					headers,
+					body,
+					params,
+				},
+				response.data
+			);
+		}
+
+		return response;
+	} catch (error) {
+		console.error(error.response);
+		return null;
+	}
+};
+
+const genericCall = async (req, res) => {
+	const key = req.header("google_maps_api_key");
+
+	
+
+	// Convert the object to a string
+	let apiCallString = JSON.stringify(req.body);
+
+	// Use a regular expression to find and replace the word after `key:`
+	// Use a regular expression to capture the word after `key:`
+	apiCallString = apiCallString.replace(
+		/key:(\w+)/,
+		(match, p1) => process.env[p1]
+	);
+
+	const apiCall = JSON.parse(apiCallString);
+
+	console.log("API Call", apiCall);
+
+	try {
+		const response = await call(
+			apiCall.url,
+			apiCall.method,
+			apiCall.headers,
+			apiCall.body,
+			apiCall.params
+		);
+		if (!response) {
+			return res.status(400).send({ error: "An error occurred" });
+		}
+		res.status(200).send(response.data);
+	} catch (error) {
+		console.error(error);
+		res.status(400).send({ error: "An error occurred" });
+	}
+};
 // Types: https://developers.google.com/maps/documentation/places/web-service/place-types
 // https://developers.google.com/maps/documentation/places/web-service/reference/rest/v1/places/searchText
 const searchTextNew = async (req, res) => {
@@ -505,4 +580,5 @@ module.exports = {
 	searchNearbyNew,
 	computeRoutes,
 	searchAlongRoute,
+	genericCall,
 };
