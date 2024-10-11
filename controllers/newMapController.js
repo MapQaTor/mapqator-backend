@@ -84,15 +84,13 @@ const call = async (url, method, headers, body, params) => {
 const genericCall = async (req, res) => {
 	const key = req.header("google_maps_api_key");
 
-	
-
 	// Convert the object to a string
 	let apiCallString = JSON.stringify(req.body);
 
 	// Use a regular expression to find and replace the word after `key:`
 	// Use a regular expression to capture the word after `key:`
 	apiCallString = apiCallString.replace(
-		/key:(\w+)/,
+		/key:(\w+)/g,
 		(match, p1) => process.env[p1]
 	);
 
