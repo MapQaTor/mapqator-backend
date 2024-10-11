@@ -42,36 +42,31 @@ const call2 = async (url, method, headers, body, key) => {
 	}
 };
 
-const call = async (url, method, headers, body, params) => {
+const call = async (apiCall) => {
 	try {
-		const cachedResponse = await apiCallRepository.get({
-			url,
-			method,
-			headers,
-			body,
-		});
+		let apiEncoded = {
+			url: apiCall.url,
+			method: apiCall.method,
+			headers: apiCall.headers,
+			data: apiCall.body,
+			params: apiCall.params,
+		};
+		const cachedResponse = await apiCallRepository.get(apiEncoded);
 		if (cachedResponse.data.length > 0) {
 			return { data: cachedResponse.data[0].response };
 		}
-		const response = await axios({
-			url: url,
-			method: method,
-			headers: headers,
-			data: body,
-			params: params,
-		});
+
+		let apiCallString = JSON.stringify(apiEncoded);
+		apiCallString = apiCallString.replace(
+			/key:(\w+)/g,
+			(match, p1) => process.env[p1]
+		);
+		let api = JSON.parse(apiCallString);
+		console.log("API", api);
+		const response = await axios(api);
 
 		if (response.data) {
-			apiCallRepository.set(
-				{
-					url,
-					method,
-					headers,
-					body,
-					params,
-				},
-				response.data
-			);
+			apiCallRepository.set(apiEncoded, response.data);
 		}
 
 		return response;
@@ -83,29 +78,8 @@ const call = async (url, method, headers, body, params) => {
 
 const genericCall = async (req, res) => {
 	const key = req.header("google_maps_api_key");
-
-	// Convert the object to a string
-	let apiCallString = JSON.stringify(req.body);
-
-	// Use a regular expression to find and replace the word after `key:`
-	// Use a regular expression to capture the word after `key:`
-	apiCallString = apiCallString.replace(
-		/key:(\w+)/g,
-		(match, p1) => process.env[p1]
-	);
-
-	const apiCall = JSON.parse(apiCallString);
-
-	console.log("API Call", apiCall);
-
 	try {
-		const response = await call(
-			apiCall.url,
-			apiCall.method,
-			apiCall.headers,
-			apiCall.body,
-			apiCall.params
-		);
+		const response = await call(req.body);
 		if (!response) {
 			return res.status(400).send({ error: "An error occurred" });
 		}

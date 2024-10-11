@@ -4,9 +4,15 @@ const get = async (request) => {
 	const query = `
         SELECT *
         FROM api_calls
-        WHERE request = $1
+        WHERE url = $1 AND method = $2 AND headers = $3 AND data = $4 AND params = $5
     `;
-	const params = [request];
+	const params = [
+		request.url,
+		request.method,
+		request.headers,
+		request.data,
+		request.params,
+	];
 	// If found then update hit count
 	const result = await base.query(query, params);
 
@@ -14,20 +20,27 @@ const get = async (request) => {
 		const updateQuery = `
             UPDATE api_calls
             SET hit_count = hit_count + 1
-            WHERE request = $1
+            WHERE id = $1
         `;
-		await base.query(updateQuery, params);
+		await base.query(updateQuery, [result.data[0].id]);
 	}
 	return result;
 };
 
 const set = async (request, response) => {
 	const query = `
-        INSERT INTO api_calls (request, response)
-        VALUES ($1, $2)
+        INSERT INTO api_calls (url, method, headers, data, params, response)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
     `;
-	const params = [request, response];
+	const params = [
+		request.url,
+		request.method,
+		request.headers,
+		request.data,
+		request.params,
+		response,
+	];
 	const result = await base.query(query, params);
 	return result;
 };
