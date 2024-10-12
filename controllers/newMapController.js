@@ -51,6 +51,8 @@ const call = async (apiCall) => {
 			data: apiCall.body,
 			params: apiCall.params,
 		};
+
+		console.log("Searching..", apiEncoded);
 		const cachedResponse = await apiCallRepository.get(apiEncoded);
 		if (cachedResponse.data.length > 0) {
 			return { data: cachedResponse.data[0].response };
@@ -62,10 +64,11 @@ const call = async (apiCall) => {
 			(match, p1) => process.env[p1]
 		);
 		let api = JSON.parse(apiCallString);
-		console.log("API", api);
+		// console.log("API", api);
 		const response = await axios(api);
 
 		if (response.data) {
+			console.log("Saving..", apiEncoded);
 			apiCallRepository.set(apiEncoded, response.data);
 		}
 
