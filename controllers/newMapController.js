@@ -48,7 +48,7 @@ const call = async (apiCall) => {
 			url: apiCall.url,
 			method: apiCall.method,
 			headers: apiCall.headers,
-			data: apiCall.body,
+			data: apiCall.data,
 			params: apiCall.params,
 		};
 
