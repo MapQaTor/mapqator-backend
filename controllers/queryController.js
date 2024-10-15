@@ -83,6 +83,16 @@ const getQuery = async (req, res) => {
 	}
 };
 
+const getNewQuery = async (req, res) => {
+	const id = parseInt(req.params.id);
+	const result = await queryRepository.getNewQuery(id);
+	if (result.success) {
+		res.send(result.data);
+	} else {
+		res.status(404).send(result);
+	}
+};
+
 const submitForEvaluation = async (req, res) => {
 	const id = parseInt(req.params.id);
 	const context = req.body.context;
@@ -344,6 +354,7 @@ const getModels = async (req, res) => {
 module.exports = {
 	createQuery,
 	getQuery,
+	getNewQuery,
 	getQueries,
 	getNewQueries,
 	updateCategory,
