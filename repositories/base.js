@@ -22,6 +22,7 @@ query = async (query, params) => {
 				// ssl: {
 				//   rejectUnauthorized: false,
 				// },
+				options: "-c search_path=public", // ALTER ROLE postgres SET search_path = my_schema, "$user", public;
 			});
 			console.log("POOL CREATED");
 		}
@@ -42,7 +43,7 @@ query = async (query, params) => {
 };
 
 check = async () => {
-	const result = await query("SELECT version();", []);
+	const result = await query("SELECT * FROM users", []);
 	return result;
 };
 
