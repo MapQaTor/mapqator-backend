@@ -8,8 +8,8 @@ Follow the step by step installation procedure to install and run this on your m
 
 Make sure you have node and postgresql installed in your device.
 
-**`NodeJs`**: Install Nodejs from [here](https://nodejs.org/en/download/) \
-**`PostgreSQL`** Install PostgreSQL from [here](https://www.postgresql.org/download/)
+- **`NodeJs`**: Install Nodejs from [here](https://nodejs.org/en/download/)
+- **`PostgreSQL`** Install PostgreSQL from [here](https://www.postgresql.org/download/)
 
 
 ## Installation <a name="configuration"></a>
