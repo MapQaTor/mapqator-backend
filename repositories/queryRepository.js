@@ -19,12 +19,10 @@ const createQuery = async (record, username) => {
 
 const createNewQuery = async (record, username) => {
 	const query =
-		"INSERT INTO new_dataset (name, context, context_json, context_gpt, question, answer, classification, username, api_call_logs) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *";
+		"INSERT INTO new_dataset (context, context_json, question, answer, classification, username, api_call_logs) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *";
 	const params = [
-		record.name,
 		record.context,
 		record.context_json,
-		record.context_gpt,
 		record.question,
 		record.answer,
 		record.classification,
