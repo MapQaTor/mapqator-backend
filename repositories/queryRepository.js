@@ -74,8 +74,8 @@ const updateNewQuery = async (id, record) => {
 	// await evaluationRepository.deleteNewEvaluationByQuery(id);
 	const query = `
 		UPDATE new_dataset
-		SET name = $1, context = $2, context_json = $3, context_gpt = $4, questions = $5, api_call_logs = $7
-		WHERE id = $6
+		SET name = $1, context = $2, context_json = $3, context_gpt = $4, question = $5, answer = $6, classification = $7, api_call_logs = $8
+		WHERE id = $9
 		RETURNING *
 	`;
 	const params = [
@@ -83,9 +83,11 @@ const updateNewQuery = async (id, record) => {
 		record.context,
 		record.context_json,
 		record.context_gpt,
-		record.questions,
-		id,
+		record.question,
+		record.answer,
+		record.classification,
 		record.api_call_logs,
+		id,
 	];
 	const result = await base.query(query, params);
 	return result;
