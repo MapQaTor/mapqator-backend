@@ -1,50 +1,25 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const genAI = new GoogleGenerativeAI("AIzaSyB3MhiTdLd7KFC08sR-EBNjWO1M8ZNeYj8");
-const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
-// const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const genAI = new GoogleGenerativeAI("AIzaSyCCM-hrQGaL8wZPcjVqadB1mZphT22A6C0");
+// const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const askGeminiLive = async (req, res) => {
-	return res.send("Option 1");
-	const { question, answer } = req.body.query;
-	console.log("Hit Gemini", req.body.context, question, answer);
-	let options = ""; // Assuming prompt is initialized earlier in your code
-	for (let i = 0; i < answer.options.length; i++) {
-		if (answer.options[i] === "") {
-			break;
-		}
-		options += `Option${i + 1}: ${answer.options[i]}, `;
-	}
+	// return res.send("Option 1");
+	const { prompt } = req.body;
 
-	const message_text = [
-		{
-			role: "user",
-			parts: [
-				{
-					text: `Context:\n${req.body.context}. From this context I will ask you MCQ Questions.`,
-				},
-			],
-		},
-		{
-			role: "model",
-			parts: [
-				{
-					text: `Okay. Got it. Ask any question.`,
-				},
-			],
-		},
-	];
+	const message_text = [];
 
 	const chat = model.startChat({
 		history: message_text,
 		generationConfig: {
-			maxOutputTokens: 4096,
+			maxOutputTokens: 80,
 		},
 	});
 
-	const msg = `Question:\n${question} Options:\n${options}. Choose the answer from the following options (1/2/3/4). And give explanation in bracket. So, the output format will be \"Option_Number (Explanation). If there is no answer in the options, then return 0 first and explain the reason. Remember you need to answer the question only from the context, not using any of your own knowledge. If the question can't be answered from the context notify it. Also return 0 if the correct answer is not present in the options.)`;
-
 	try {
-		const result = await chat.sendMessage(msg);
+		const result = await chat.sendMessage(
+			prompt + "\n Keep your response concise and to the point."
+		);
 		const response = result.response;
 		const text = response.text();
 		console.log("Gemini response:", text);

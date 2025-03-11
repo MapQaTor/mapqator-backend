@@ -5,6 +5,9 @@ const queryRepository = require("../repositories/queryRepository");
 // 	process.env.AZURE_OPENAI_ENDPOINT,
 // 	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
 // );
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI("AIzaSyCCM-hrQGaL8wZPcjVqadB1mZphT22A6C0");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const client = new OpenAIClient(
 	"https://qcri-llm-rag-4.openai.azure.com/",
@@ -497,6 +500,69 @@ const askGPTLive = async (req, res) => {
 	}
 };
 
+const generateQuestionGemini = async (req, res) => {
+	const { context } = req.body;
+
+	const message_text = [
+		{
+			role: "user",
+			parts: [
+				{
+					text: "I will give you some information, you need to generate a question based on the information. The question should sound like user is asking a question. This is for QnA dataset.",
+				},
+			],
+		},
+		{
+			role: "model",
+			parts: [
+				{
+					text: `Okay. Got it. Give the context.`,
+				},
+			],
+		},
+		{
+			role: "user",
+			parts: [
+				{
+					text: `Information of <b>Paris</b>:\n- Location: Paris, France.\n\nInformation of <b>Louvre Museum</b>:\n- Location: 75001 Paris, France.\n\nInformation of <b>Cathédrale Notre-Dame de Paris</b>:\n- Location: 6 Parvis Notre-Dame - Pl. Jean-Paul II, 75004 Paris, France.\n\nInformation of <b>Eiffel Tower</b>:\n- Location: Av. Gustave Eiffel, 75007 Paris, France.\n\nTravel time from <b>Cathédrale Notre-Dame de Paris</b> to <b>Eiffel Tower</b> is:\n- By cycle: 20 mins (5.4 km).\n\nTravel time from <b>Louvre Museum</b> to <b>Cathédrale Notre-Dame de Paris</b> is:\n- By cycle: 12 mins (2.2 km).`,
+				},
+			],
+		},
+		{
+			role: "model",
+			parts: [
+				{
+					text: `I am planning a visit to Paris and want to maximize my time. If I spend 2 hours at the Louvre Museum in the morning, 1 hour at the Notre-Dame Cathedral around noon, and 1 hour at the Eiffel Tower in the afternoon, how much time should I allocate for travel between these places using public transport?`,
+				},
+			],
+		},
+	];
+
+	const chat = model.startChat({
+		history: message_text,
+		generationConfig: {
+			maxOutputTokens: 4096,
+		},
+	});
+
+	console.log("Chat started");
+
+	try {
+		const result = await chat.sendMessage(
+			"Good. Next Context is: " + context
+		);
+		const response = result.response;
+		const text = response.text();
+		return res.send(text);
+	} catch (error) {
+		console.error("An error occurred:", error);
+		res.status(500).send({
+			success: false,
+			error: "An error occurred",
+		});
+	}
+};
+
 const generateQuestion = async (req, res) => {
 	const message_text = [
 		{
@@ -554,5 +620,6 @@ module.exports = {
 	askGPT,
 	askGPTLive,
 	generateQuestion,
+	generateQuestionGemini,
 	askMulipleQuestions,
 };
