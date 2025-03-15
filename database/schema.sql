@@ -545,40 +545,48 @@ COMMENT ON FUNCTION extensions.grant_pg_graphql_access() IS 'Grants access to pg
 CREATE FUNCTION extensions.grant_pg_net_access() RETURNS event_trigger
     LANGUAGE plpgsql
     AS $$
-BEGIN
-  IF EXISTS (
-    SELECT 1
-    FROM pg_event_trigger_ddl_commands() AS ev
-    JOIN pg_extension AS ext
-    ON ev.objid = ext.oid
-    WHERE ext.extname = 'pg_net'
-  )
-  THEN
-    IF NOT EXISTS (
+  BEGIN
+    IF EXISTS (
       SELECT 1
-      FROM pg_roles
-      WHERE rolname = 'supabase_functions_admin'
+      FROM pg_event_trigger_ddl_commands() AS ev
+      JOIN pg_extension AS ext
+      ON ev.objid = ext.oid
+      WHERE ext.extname = 'pg_net'
     )
     THEN
-      CREATE USER supabase_functions_admin NOINHERIT CREATEROLE LOGIN NOREPLICATION;
+      IF NOT EXISTS (
+        SELECT 1
+        FROM pg_roles
+        WHERE rolname = 'supabase_functions_admin'
+      )
+      THEN
+        CREATE USER supabase_functions_admin NOINHERIT CREATEROLE LOGIN NOREPLICATION;
+      END IF;
+
+      GRANT USAGE ON SCHEMA net TO supabase_functions_admin, postgres, anon, authenticated, service_role;
+
+      IF EXISTS (
+        SELECT FROM pg_extension
+        WHERE extname = 'pg_net'
+        -- all versions in use on existing projects as of 2025-02-20
+        -- version 0.12.0 onwards don't need these applied
+        AND extversion IN ('0.2', '0.6', '0.7', '0.7.1', '0.8.0', '0.10.0', '0.11.0')
+      ) THEN
+        ALTER function net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) SECURITY DEFINER;
+        ALTER function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) SECURITY DEFINER;
+
+        ALTER function net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) SET search_path = net;
+        ALTER function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) SET search_path = net;
+
+        REVOKE ALL ON FUNCTION net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) FROM PUBLIC;
+        REVOKE ALL ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) FROM PUBLIC;
+
+        GRANT EXECUTE ON FUNCTION net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;
+        GRANT EXECUTE ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;
+      END IF;
     END IF;
-
-    GRANT USAGE ON SCHEMA net TO supabase_functions_admin, postgres, anon, authenticated, service_role;
-
-    ALTER function net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) SECURITY DEFINER;
-    ALTER function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) SECURITY DEFINER;
-
-    ALTER function net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) SET search_path = net;
-    ALTER function net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) SET search_path = net;
-
-    REVOKE ALL ON FUNCTION net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) FROM PUBLIC;
-    REVOKE ALL ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) FROM PUBLIC;
-
-    GRANT EXECUTE ON FUNCTION net.http_get(url text, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;
-    GRANT EXECUTE ON FUNCTION net.http_post(url text, body jsonb, params jsonb, headers jsonb, timeout_milliseconds integer) TO supabase_functions_admin, postgres, anon, authenticated, service_role;
-  END IF;
-END;
-$$;
+  END;
+  $$;
 
 
 ALTER FUNCTION extensions.grant_pg_net_access() OWNER TO postgres;
@@ -1347,28 +1355,28 @@ ALTER FUNCTION realtime.quote_wal2json(entity regclass) OWNER TO supabase_admin;
 CREATE FUNCTION realtime.send(payload jsonb, event text, topic text, private boolean DEFAULT true) RETURNS void
     LANGUAGE plpgsql
     AS $$
-DECLARE
-  partition_name text;
 BEGIN
-  partition_name := 'messages_' || to_char(NOW(), 'YYYY_MM_DD');
+  BEGIN
+    -- Set the topic configuration
+    EXECUTE format('SET LOCAL realtime.topic TO %L', topic);
 
-  IF NOT EXISTS (
-    SELECT 1
-    FROM pg_class c
-    JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = 'realtime'
-    AND c.relname = partition_name
-  ) THEN
-    EXECUTE format(
-      'CREATE TABLE realtime.%I PARTITION OF realtime.messages FOR VALUES FROM (%L) TO (%L)',
-      partition_name,
-      NOW(),
-      (NOW() + interval '1 day')::timestamp
-    );
-  END IF;
-
-  INSERT INTO realtime.messages (payload, event, topic, private, extension)
-  VALUES (payload, event, topic, private, 'broadcast');
+    -- Attempt to insert the message
+    INSERT INTO realtime.messages (payload, event, topic, private, extension)
+    VALUES (payload, event, topic, private, 'broadcast');
+  EXCEPTION
+    WHEN OTHERS THEN
+      -- Capture and notify the error
+      PERFORM pg_notify(
+          'realtime:system',
+          jsonb_build_object(
+              'error', SQLERRM,
+              'function', 'realtime.send',
+              'event', event,
+              'topic', topic,
+              'private', private
+          )::text
+      );
+  END;
 END;
 $$;
 
@@ -2650,7 +2658,10 @@ CREATE TABLE public.new_dataset (
     questions json[],
     username character varying,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    name character varying
+    name character varying,
+    question text,
+    answer json,
+    classification character varying
 );
 
 
