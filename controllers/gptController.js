@@ -6,12 +6,12 @@ const queryRepository = require("../repositories/queryRepository");
 // 	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
 // );
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const genAI = new GoogleGenerativeAI("AIzaSyCCM-hrQGaL8wZPcjVqadB1mZphT22A6C0");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL });
 
 const client = new OpenAIClient(
-	"https://qcri-llm-rag-4.openai.azure.com/",
-	new AzureKeyCredential("01488083a8d243e684bd48a39152d90a")
+	process.env.AZURE_OPENAI_ENDPOINT,
+	new AzureKeyCredential(process.env.AZURE_OPENAI_KEY)
 );
 
 const translateContext = async (req, res) => {
