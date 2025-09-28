@@ -39,7 +39,7 @@ psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE mapqator TO postgres;"
 psql -U postgres -d mapqator -a -f database\schema.sql
 ```
 
-An empty database will be created with the name `mapqator` and the schema will be created.
+An empty database will be created with the name `mapqator` and the schema will be created. _Note: Ignore errors related to supabase if you are setting up a local database_.
 
 If you want the cached data that was used for MapEval benchmark you should use: `psql -U postgres -d mapqator -a -f database\dump.sql` instead of `psql -U postgres -d mapqator -a -f database\schema.sql`.
 
@@ -70,4 +70,5 @@ npm start
 ```
 
 You should find that the project is working!
+
 
